@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Flatway — Email de bienvenue partenaire Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #f5f5f5; color: #1a1a1a; }
+
+  .nav {
+    background: #1a1a2e;
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    height: 60px;
+    gap: 32px;
+  }
+  .nav-logo span { font-size: 18px; font-weight: 600; color: #fff; letter-spacing: -0.3px; }
+
+  .page { max-width: 720px; margin: 0 auto; padding: 40px 20px 80px; }
+  .page-head { margin-bottom: 28px; }
+  .page-head h1 { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
+  .page-head p { font-size: 14px; color: #666; line-height: 1.5; }
+
+  .card {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 12px; font-weight: 500; color: #555; margin-bottom: 6px; }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    border: 1px solid #e0e0e0;
+    border-radius: 7px;
+    padding: 9px 11px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    color: #1a1a1a;
+    outline: none;
+    background: #fafafa;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: #8B1A1A; background: #fff; }
+  .field textarea { resize: vertical; min-height: 60px; }
+
+  .row { display: flex; gap: 12px; }
+  .row .field { flex: 1; }
+
+  .gen-btn {
+    background: #8B1A1A;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 11px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+  .gen-btn:hover { background: #6f1414; }
+  .gen-btn:disabled { background: #ccc; cursor: default; }
+
+  .result { display: none; }
+  .result.visible { display: block; }
+  .email-subject {
+    font-size: 13px;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+  }
+  .email-subject span { color: #1a1a1a; text-transform: none; font-weight: 500; letter-spacing: 0; }
+  .email-body {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #2a2a2a;
+    white-space: pre-wrap;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 14px;
+  }
+  .part-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+  }
+  .part-tag.ai { background: #f3e8e8; color: #8B1A1A; }
+  .part-tag.code { background: #eef0f4; color: #444; }
+  .part-block { margin-bottom: 16px; }
+
+  .status {
+    font-size: 13px;
+    color: #888;
+    margin-top: 12px;
+  }
+  .status.error { color: #8B1A1A; }
+
+  .real-tag {
+    font-size: 11px;
+    color: #999;
+    margin-top: 18px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <a class="nav-logo" href="index.html" style="text-decoration:none;"><span>Flatway</span></a>
+</div>
+
+<div class="page">
+  <div class="page-head">
+    <h1>Email de bienvenue — partenaire Pro</h1>
+    <p>
+      Déclencheur réel : une agence est approuvée comme partenaire Flatway Pro et doit recevoir un email
+      avec ses identifiants de connexion. Ici, on simule la fiche de l'agence au moment de l'approbation.
+      Le paragraphe d'introduction est écrit par un modèle d'IA (personnalisé selon l'agence). Le bloc
+      d'identifiants est généré directement par le code, jamais par l'IA — un modèle ne doit pas être celui
+      qui manipule des identifiants de connexion.
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div class="field">
+        <label>Nom de l'agence</label>
+        <input type="text" id="agencyName" placeholder="ex: WeWest Immobilier" value="WeWest Immobilier"/>
+      </div>
+      <div class="field">
+        <label>Identifiant attribué</label>
+        <input type="text" id="username" placeholder="ex: wewest-immo@flatway" value="wewest-immo@flatway"/>
+      </div>
+    </div>
+    <div class="field">
+      <label>Spécialité / zone (optionnel — alimente le paragraphe IA)</label>
+      <textarea id="specialty" placeholder="ex: spécialisée dans les biens haut de gamme à Paris 16e">spécialisée dans les biens haut de gamme à Paris 16e</textarea>
+    </div>
+    <button class="gen-btn" id="genBtn" onclick="generateEmail()">Générer l'email d'accueil</button>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="card result" id="resultCard">
+    <div class="email-subject">Objet : <span id="emailSubject"></span></div>
+    <div class="email-body">
+      <div class="part-block">
+        <span class="part-tag ai">Écrit par l'IA</span>
+        <div id="emailIntro"></div>
+      </div>
+      <div class="part-block">
+        <span class="part-tag code">Généré par le code, pas par l'IA</span>
+        <div id="emailCreds"></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="real-tag">
+    Nom d'agence, identifiant et spécialité sont saisis pour la démo (en production : remplis automatiquement
+    à l'approbation du partenaire). Le mot de passe temporaire et le lien de connexion seraient générés par le
+    vrai système d'authentification de Flatway, pas par cette démo.
+  </p>
+</div>
+
+<script>
+async function generateEmail() {
+  const agencyName = document.getElementById('agencyName').value.trim();
+  const username = document.getElementById('username').value.trim();
+  const specialty = document.getElementById('specialty').value.trim();
+  const status = document.getElementById('status');
+  const btn = document.getElementById('genBtn');
+  const resultCard = document.getElementById('resultCard');
+
+  if (!agencyName || !username) {
+    status.textContent = "Indique le nom de l'agence et un identifiant.";
+    status.className = 'status error';
+    return;
+  }
+
+  btn.disabled = true;
+  status.textContent = 'Génération en cours...';
+  status.className = 'status';
+  resultCard.classList.remove('visible');
+
+  try {
+    const res = await fetch('/api/welcome-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ agencyName, username, specialty })
+    });
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      status.textContent = 'Erreur : ' + (data.error || 'réponse inattendue du serveur.');
+      status.className = 'status error';
+      return;
+    }
+
+    document.getElementById('emailSubject').textContent = data.subject || '(objet non généré)';
+    document.getElementById('emailIntro').textContent = data.intro || '(intro non générée)';
+    document.getElementById('emailCreds').textContent = data.credentialsBlock || '';
+    resultCard.classList.add('visible');
+    status.textContent = '';
+  } catch (e) {
+    status.textContent = 'Erreur réseau : ' + e.message;
+    status.className = 'status error';
+  } finally {
+    btn.disabled = false;
+  }
+}
+</script>
+
+</body>
+</html>

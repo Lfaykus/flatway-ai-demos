@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Flatway — Brouillon de réponse email</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #f5f5f5; color: #1a1a1a; }
+
+  .nav { background: #1a1a2e; padding: 0 40px; display: flex; align-items: center; height: 60px; gap: 32px; }
+  .nav-logo span { font-size: 18px; font-weight: 600; color: #fff; letter-spacing: -0.3px; }
+
+  .page { max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; }
+  .page-head { margin-bottom: 28px; }
+  .page-head h1 { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
+  .page-head p { font-size: 14px; color: #666; line-height: 1.5; }
+
+  .card { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 24px; margin-bottom: 20px; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 12px; font-weight: 500; color: #555; margin-bottom: 6px; }
+  .field input, .field select, .field textarea {
+    width: 100%; border: 1px solid #e0e0e0; border-radius: 7px; padding: 9px 11px;
+    font-size: 14px; font-family: 'Inter', sans-serif; color: #1a1a1a; outline: none; background: #fafafa;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: #8B1A1A; background: #fff; }
+  .field textarea { resize: vertical; min-height: 70px; }
+  .row { display: flex; gap: 12px; }
+  .row .field { flex: 1; }
+
+  .gen-btn {
+    background: #8B1A1A; color: #fff; border: none; border-radius: 7px; padding: 11px 20px;
+    font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'Inter', sans-serif;
+  }
+  .gen-btn:hover { background: #6f1414; }
+  .gen-btn:disabled { background: #ccc; cursor: default; }
+
+  .result { display: none; }
+  .result.visible { display: block; }
+  .intent-tag {
+    display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.03em;
+    text-transform: uppercase; padding: 3px 9px; border-radius: 5px; margin-bottom: 14px;
+    background: #eef0f4; color: #444;
+  }
+  .intent-tag.review { background: #fff3e0; color: #9a6700; }
+  .section-label {
+    display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: 0.04em;
+    text-transform: uppercase; padding: 1px 6px; border-radius: 4px; margin-bottom: 6px;
+  }
+  .section-label.ai { background: #f3e8e8; color: #8B1A1A; }
+  .section-label.missing { background: #fff3e0; color: #9a6700; }
+  .section-block { margin-bottom: 18px; }
+  .draft-reply {
+    font-size: 14px; line-height: 1.7; color: #2a2a2a; white-space: pre-wrap;
+    background: #fafafa; border: 1px solid #eee; border-radius: 7px; padding: 14px;
+  }
+  .draft-reply.english { background: #f4f7fb; border-color: #dde6f0; color: #333; }
+  .section-label.english { background: #eef0f4; color: #2a4a6b; }
+  .missing-list { font-size: 13px; line-height: 1.7; color: #2a2a2a; padding-left: 18px; }
+
+  .review-banner {
+    background: #fff3e0; color: #9a6700; border-radius: 7px; padding: 10px 14px;
+    font-size: 13px; font-weight: 500; margin-bottom: 16px;
+  }
+
+  .verify-block {
+    margin-top: 20px; padding-top: 16px; border-top: 1px solid #f0f0f0;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .verify-block input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; cursor: pointer; }
+  .verify-block label { font-size: 13px; color: #333; line-height: 1.5; cursor: pointer; }
+  .send-btn {
+    background: #fff; color: #8B1A1A; border: 1px solid #8B1A1A; border-radius: 7px;
+    padding: 9px 16px; font-size: 13px; font-weight: 500; cursor: pointer;
+    font-family: 'Inter', sans-serif; margin-top: 14px;
+  }
+  .send-btn:disabled { background: #f5f5f5; color: #bbb; border-color: #ddd; cursor: not-allowed; }
+  .send-btn:not(:disabled):hover { background: #fdf2f2; }
+
+  .status { font-size: 13px; color: #888; margin-top: 12px; }
+  .status.error { color: #8B1A1A; }
+  .status.success { color: #2e7d32; }
+  .real-tag { font-size: 11px; color: #999; margin-top: 18px; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <a class="nav-logo" href="index.html" style="text-decoration:none;"><span>Flatway</span></a>
+</div>
+
+<div class="page">
+  <div class="page-head">
+    <h1>Brouillon de réponse email (simulation)</h1>
+    <p>
+      Un acheteur, vendeur ou courtier envoie une question par email. L'IA lit la question, identifie
+      ce qui est demandé, et rédige un brouillon de réponse à partir du contexte fourni sur le bien — sans
+      jamais inventer une information absente (prix, disponibilité, etc). C'est un vrai usage de l'IA :
+      comprendre une question en langage libre n'est pas quelque chose que des règles fixes peuvent faire.
+      <strong>Important :</strong> ceci simule un email reçu — aucune vraie boîte mail n'est connectée, et
+      aucun email n'est réellement envoyé. Le bouton "Envoyer" ci-dessous est une simulation.
+    </p>
+    <p style="margin-top:10px; font-style:italic; color:#888;">
+      English (for Luke): a buyer/seller/broker sends a question by email. The AI reads it, classifies
+      what's being asked, and drafts a reply using only the property context you provide — it never
+      invents missing facts. The real outgoing reply stays in French (real customers write French); an
+      English translation is shown below the French draft purely so you can verify it without reading
+      French. Nothing here is connected to a real inbox, and no email is actually sent — the "send"
+      button is a simulation.
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div class="field">
+        <label>Nom de l'expéditeur</label>
+        <input type="text" id="senderName" value="Camille Durand"/>
+      </div>
+      <div class="field">
+        <label>Rôle</label>
+        <select id="senderType">
+          <option value="acheteur potentiel">Acheteur potentiel</option>
+          <option value="vendeur">Vendeur</option>
+          <option value="courtier partenaire">Courtier partenaire</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Sujet</label>
+      <input type="text" id="subject" value="Question sur l'appartement rue de la Pompe"/>
+    </div>
+    <div class="field">
+      <label>Corps de l'email reçu</label>
+      <textarea id="body">Bonjour, je suis très intéressée par l'appartement au 12 rue de la Pompe. Est-il toujours disponible ? Et serait-il possible d'organiser une visite ce week-end ? Merci !</textarea>
+    </div>
+    <div class="field">
+      <label>Contexte sur le bien (ce que l'IA est autorisée à utiliser — laissez vide pour tester le cas "aucune info")</label>
+      <textarea id="listingContext">Statut : disponible. Prix : 1 250 000€. Visites possibles le samedi entre 10h et 17h sur rendez-vous.</textarea>
+    </div>
+    <button class="gen-btn" id="genBtn" onclick="generateReply()">Générer le brouillon de réponse</button>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="card result" id="resultCard">
+    <div id="reviewBanner" class="review-banner" style="display:none;">
+      Cet email nécessite une attention humaine avant d'envoyer une réponse (négociation, plainte, ou
+      situation sensible détectée).
+    </div>
+    <span class="intent-tag" id="intentTag"></span>
+
+    <div class="section-block">
+      <span class="section-label ai">Brouillon écrit par l'IA (français — ce qui serait réellement envoyé)</span>
+      <div class="draft-reply" id="draftReply"></div>
+    </div>
+
+    <div class="section-block">
+      <span class="section-label english">English translation — for review only, not what gets sent</span>
+      <div class="draft-reply english" id="draftReplyEnglish"></div>
+    </div>
+
+    <div class="section-block" id="missingBlock">
+      <span class="section-label missing">Informations manquantes — l'IA ne les a pas inventées</span>
+      <ul class="missing-list" id="missingList"></ul>
+    </div>
+
+    <div class="verify-block">
+      <input type="checkbox" id="verifyCheck" onchange="updateSendState()"/>
+      <label for="verifyCheck">
+        J'ai relu ce brouillon et vérifié qu'il est exact et approprié avant tout envoi. L'IA peut faire
+        des erreurs ou manquer de contexte — cette case confirme une relecture humaine.
+      </label>
+    </div>
+    <div>
+      <button class="send-btn" id="sendBtn" disabled onclick="mockSend()">Envoyer (simulation)</button>
+    </div>
+    <div class="status" id="sendStatus"></div>
+  </div>
+
+  <p class="real-tag">
+    Limite honnête : l'IA ne répond qu'avec les informations présentes dans le champ "Contexte sur le bien."
+    Si une info manque (prix, disponibilité, etc), elle est listée séparément plutôt qu'inventée. Pour une
+    vraie automatisation, ceci devrait être connecté à la vraie boîte mail de Flatway (API Gmail/Outlook ou
+    système d'assistance) — accès qui doit venir de quelqu'un qui administre ce système, pas de cette démo.
+  </p>
+</div>
+
+<script>
+async function generateReply() {
+  const senderName = document.getElementById('senderName').value.trim();
+  const senderType = document.getElementById('senderType').value;
+  const subject = document.getElementById('subject').value.trim();
+  const body = document.getElementById('body').value.trim();
+  const listingContext = document.getElementById('listingContext').value.trim();
+  const status = document.getElementById('status');
+  const btn = document.getElementById('genBtn');
+  const resultCard = document.getElementById('resultCard');
+
+  if (!body) {
+    status.textContent = "Indique le corps de l'email reçu.";
+    status.className = 'status error';
+    return;
+  }
+
+  btn.disabled = true;
+  status.textContent = 'Analyse de la demande en cours...';
+  status.className = 'status';
+  resultCard.classList.remove('visible');
+
+  try {
+    const res = await fetch('/api/email-reply', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ senderName, senderType, subject, body, listingContext })
+    });
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      status.textContent = 'Erreur : ' + (data.error || 'réponse inattendue du serveur.');
+      status.className = 'status error';
+      return;
+    }
+
+    const intentLabels = {
+      disponibilite: 'Disponibilité', visite: 'Visite', prix: 'Prix',
+      documents: 'Documents', negociation: 'Négociation', autre: 'Autre', indetermine: 'Indéterminé'
+    };
+    const intentTag = document.getElementById('intentTag');
+    intentTag.textContent = intentLabels[data.intent] || data.intent || '(non classé)';
+    intentTag.className = 'intent-tag' + (data.needsHumanReview ? ' review' : '');
+
+    document.getElementById('reviewBanner').style.display = data.needsHumanReview ? '' : 'none';
+    document.getElementById('draftReply').textContent = data.draftReply || '(brouillon non généré)';
+    document.getElementById('draftReplyEnglish').textContent = data.draftReplyEnglish || '(translation not generated)';
+
+    const missingList = document.getElementById('missingList');
+    const missingBlock = document.getElementById('missingBlock');
+    missingList.innerHTML = '';
+    if (data.missingInfo && data.missingInfo.length > 0) {
+      missingBlock.style.display = '';
+      data.missingInfo.forEach(m => {
+        const li = document.createElement('li');
+        li.textContent = m;
+        missingList.appendChild(li);
+      });
+    } else {
+      missingBlock.style.display = 'none';
+    }
+
+    // New draft — reset the verification gate so an old approval never carries over.
+    document.getElementById('verifyCheck').checked = false;
+    document.getElementById('sendStatus').textContent = '';
+    updateSendState();
+
+    resultCard.classList.add('visible');
+    status.textContent = '';
+  } catch (e) {
+    status.textContent = 'Erreur réseau : ' + e.message;
+    status.className = 'status error';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function updateSendState() {
+  document.getElementById('sendBtn').disabled = !document.getElementById('verifyCheck').checked;
+}
+
+function mockSend() {
+  const sendStatus = document.getElementById('sendStatus');
+  sendStatus.textContent = 'Simulation : aucun email réel envoyé. En production, ceci appellerait une vraie API email (Gmail/Outlook) une fois connectée.';
+  sendStatus.className = 'status success';
+}
+</script>
+
+</body>
+</html>

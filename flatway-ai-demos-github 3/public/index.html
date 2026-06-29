@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Flatway — Consulter les annonces</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #f5f5f5; color: #1a1a1a; }
+
+    /* NAV */
+    .nav {
+      background: #1a1a2e;
+      padding: 0 40px;
+      display: flex;
+      align-items: center;
+      height: 60px;
+      gap: 32px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .nav-logo img {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+    }
+    .nav-logo span {
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: -0.3px;
+    }
+    .nav-links { display: flex; gap: 24px; margin-left: 8px; }
+    .nav-links a {
+      color: rgba(255,255,255,0.6);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.15s;
+    }
+    .nav-links a:hover, .nav-links a.active { color: #fff; }
+    .nav-right { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+    .nav-pro {
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
+      text-decoration: none;
+    }
+    .nav-login {
+      font-size: 13px;
+      color: #fff;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 6px;
+      padding: 6px 14px;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .nav-login:hover { background: rgba(255,255,255,0.18); }
+
+    /* PAGE LAYOUT */
+    .page { display: flex; height: calc(100vh - 60px); }
+
+    /* SIDEBAR FILTERS */
+    .sidebar {
+      width: 280px;
+      background: #fff;
+      border-right: 1px solid #e5e5e5;
+      padding: 20px;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    .sidebar-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 16px;
+    }
+    .filter-group { margin-bottom: 20px; }
+    .filter-label { font-size: 12px; font-weight: 500; color: #555; margin-bottom: 8px; display: block; }
+    .filter-select, .filter-input {
+      width: 100%;
+      border: 1px solid #e0e0e0;
+      border-radius: 7px;
+      padding: 8px 10px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      color: #1a1a1a;
+      outline: none;
+      background: #fafafa;
+    }
+    .filter-select:focus, .filter-input:focus { border-color: #8B1A1A; background: #fff; }
+    .filter-row { display: flex; gap: 8px; }
+    .filter-row .filter-input { flex: 1; }
+    .filter-divider { border: none; border-top: 1px solid #f0f0f0; margin: 16px 0; }
+    .type-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+    .type-pill {
+      padding: 5px 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 16px;
+      font-size: 12px;
+      cursor: pointer;
+      color: #555;
+      transition: all 0.12s;
+      user-select: none;
+    }
+    .type-pill.active { background: #8B1A1A; color: #fff; border-color: #8B1A1A; }
+    .filter-btn {
+      width: 100%;
+      background: #8B1A1A;
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      padding: 10px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    /* MAIN CONTENT */
+    .main { flex: 1; overflow-y: auto; padding: 24px 28px; }
+
+    /* AI SEARCH BAR — THE NEW FEATURE */
+    .ai-search-section {
+      background: linear-gradient(135deg, #1a1a2e 0%, #2d1f3d 100%);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .ai-search-section::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 160px; height: 160px;
+      background: radial-gradient(circle, rgba(139,26,26,0.3) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .ai-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+    .ai-dot { width: 6px; height: 6px; background: #c0392b; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .ai-input-row { display: flex; gap: 10px; }
+    .ai-input {
+      flex: 1;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      padding: 11px 16px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      color: #fff;
+      outline: none;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .ai-input::placeholder { color: rgba(255,255,255,0.4); }
+    .ai-input:focus { border-color: rgba(255,255,255,0.45); background: rgba(255,255,255,0.13); }
+    .ai-btn {
+      background: #8B1A1A;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 11px 20px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ai-btn:hover { opacity: 0.88; }
+    .ai-suggestions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .ai-suggestion {
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.65);
+      cursor: pointer;
+      transition: all 0.1s;
+    }
+    .ai-suggestion:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+    /* PARSED CRITERIA */
+    .criteria-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+      min-height: 28px;
+    }
+    .criteria-label { font-size: 12px; color: #888; }
+    .criteria-tag {
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      background: #fef0f0;
+      border: 1px solid #f0c0c0;
+      color: #8B1A1A;
+      font-weight: 500;
+    }
+
+    /* RESULTS HEADER */
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .results-count { font-size: 14px; color: #555; }
+    .results-count strong { color: #1a1a1a; }
+    .sort-select {
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      color: #555;
+      outline: none;
+      background: #fff;
+    }
+
+    /* LISTING CARDS */
+    .listings { display: flex; flex-direction: column; gap: 12px; }
+    .listing-card {
+      background: #fff;
+      border: 1px solid #e8e8e8;
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      transition: box-shadow 0.15s, border-color 0.15s;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+    }
+    .listing-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      border-color: #ccc;
+    }
+    .listing-card.ai-match { border-color: #d4b8b8; }
+    .listing-img {
+      width: 200px;
+      height: 140px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: #f0f0f0;
+    }
+    .listing-body { padding: 16px 20px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+    .listing-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .listing-title { font-size: 15px; font-weight: 600; color: #1a1a1a; line-height: 1.3; margin-bottom: 6px; }
+    .listing-meta { font-size: 13px; color: #777; display: flex; gap: 12px; flex-wrap: wrap; }
+    .listing-meta span { display: flex; align-items: center; gap: 4px; }
+    .listing-price { font-size: 18px; font-weight: 600; color: #8B1A1A; white-space: nowrap; }
+    .listing-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+    .listing-agency {
+      font-size: 12px;
+      color: #999;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .listing-agency-dot { width: 6px; height: 6px; background: #ddd; border-radius: 50%; }
+    .ai-match-badge {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 10px;
+      background: #e8f5e9;
+      color: #2e7d32;
+      font-weight: 500;
+    }
+    .rdv-btn {
+      font-size: 12px;
+      padding: 6px 14px;
+      background: #8B1A1A;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      transition: opacity 0.15s;
+    }
+    .rdv-btn:hover { opacity: 0.85; }
+
+    /* API KEY NOTICE */
+    .key-notice {
+      background: #fff8e1;
+      border: 1px solid #ffe082;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #795548;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .key-notice input {
+      flex: 1;
+      border: 1px solid #ffe082;
+      border-radius: 5px;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-family: monospace;
+      outline: none;
+      background: #fffde7;
+    }
+    .key-notice button {
+      background: #795548;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 4px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .loading-text { font-size: 13px; color: #999; font-style: italic; padding: 8px 0; }
+
+    /* AI RECOMMENDATION CALLOUT */
+    .reco-box {
+      background: #fff; border: 1.5px solid #8B1A1A; border-radius: 10px;
+      padding: 14px 18px; margin-bottom: 16px;
+    }
+    .reco-label {
+      font-size: 11px; font-weight: 600; color: #8B1A1A; text-transform: uppercase;
+      letter-spacing: 0.06em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+    }
+    .reco-pick { font-size: 14px; margin-bottom: 4px; }
+    .reco-pick b { color: #1a1a1a; }
+    .reco-reason { font-size: 13px; color: #555; line-height: 1.5; }
+    .reco-runnerup { font-size: 12px; color: #777; margin-top: 8px; padding-top: 8px; border-top: 1px solid #f0f0f0; }
+    .reco-runnerup b { color: #1a1a1a; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-logo" href="#">
+    <img src="https://flatway.fr/_next/static/media/appIcon.4beb43c9.webp" alt="Flatway"/>
+    <span>Flatway</span>
+  </a>
+  <div class="nav-links">
+    <a href="#">Estimer</a>
+    <a href="#" class="active">Acheter</a>
+    <a href="#">Vendre</a>
+    <a href="#">Découvrir</a>
+  </div>
+  <div class="nav-right">
+    <a href="#" class="nav-pro">Vous êtes professionnel ?</a>
+    <a href="#" class="nav-login">Se connecter</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- MAIN -->
+  <main class="main" style="max-width:1000px;margin:0 auto;width:100%;">
+
+
+    <!-- HERO -->
+    <div style="text-align:center; padding: 32px 0 8px;">
+      <h1 style="font-size:28px; font-weight:600; color:#1a1a1a; margin-bottom:8px;">Trouvez votre bien idéal</h1>
+      <p style="font-size:15px; color:#777;">Décrivez ce que vous recherchez, en texte ou à la voix — notre IA s'occupe du reste.</p>
+    </div>
+
+    <!-- AI SEARCH — NEW FEATURE -->
+    <div class="ai-search-section">
+      <div class="ai-label"><div class="ai-dot"></div> Recherche intelligente — Propulsé par IA</div>
+      <div class="ai-input-row">
+        <input class="ai-input" id="aiInput" type="text" placeholder="Ex : appartement 3 pièces Paris 15 avec balcon et jardin, calme, moins de 600 000 €..." onkeydown="if(event.key==='Enter') doAiSearch()"/>
+        <button class="ai-btn" id="micBtn" onclick="toggleMic()" title="Recherche vocale" style="background:rgba(255,255,255,0.12); padding:11px 14px;">
+          <svg id="micIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+        <button class="ai-btn" onclick="doAiSearch()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Rechercher
+        </button>
+      </div>
+      <div id="voiceStatus" style="display:none; margin-top:10px; font-size:13px; color:#ff8a80; align-items:center; gap:6px;">
+        <div style="width:8px;height:8px;background:#ff5252;border-radius:50%;animation:pulse 1s infinite;"></div> Écoute en cours... parlez maintenant
+      </div>
+      <div class="ai-suggestions">
+        <span class="ai-suggestion" onclick="setAndSearch('Studio Paris 16ème, moins de 250 000 €')">Studio Paris 16ème &lt; 250k€</span>
+        <span class="ai-suggestion" onclick="setAndSearch('Grand appartement familial 5 pièces avec parking')">5 pièces avec parking</span>
+        <span class="ai-suggestion" onclick="setAndSearch('Appartement lumineux avec balcon Paris 15 ou 17ème')">Balcon Paris 15/17ème</span>
+        <span class="ai-suggestion" onclick="setAndSearch('Appartement calme avec jardin, vue dégagée')">Calme avec jardin</span>
+        <span class="ai-suggestion" onclick="setAndSearch('T2 moins de 500 000 euros Paris')">T2 &lt; 500k€</span>
+      </div>
+    </div>
+
+    <!-- CRITERIA TAGS -->
+    <div class="criteria-row" id="criteriaRow"></div>
+
+    <!-- AI RECOMMENDATION -->
+    <div id="recoBox"></div>
+
+    <!-- RESULTS HEADER -->
+    <div class="results-header">
+      <div class="results-count" id="resultsCount"><strong>15 biens</strong> disponibles à Paris</div>
+      <select class="sort-select">
+        <option>Pertinence</option>
+        <option>Prix croissant</option>
+        <option>Prix décroissant</option>
+        <option>Surface</option>
+      </select>
+    </div>
+
+    <!-- LISTINGS -->
+    <div class="listings" id="listings"></div>
+
+  </main>
+</div>
+
+<script>
+/* ===================================================================
+   ARCHITECTURE NOTE (read before reusing this in production)
+   -------------------------------------------------------------------
+   This demo calls api.anthropic.com directly from the browser with a
+   key typed into the page. That is fine for a local demo, but it is
+   NOT safe to ship: anyone with devtools open can read API_KEY and
+   start spending Flatway's money / quota.
+
+   The fix is to never let the key reach the browser. callSearchAPI()
+   below is written as the one function that would need to change:
+   in production it should POST { query } to a Flatway backend route
+   (e.g. /api/search), and that route — running server-side, holding
+   the key in an env var — calls Anthropic and returns parsed JSON.
+   Everything else (scoring, rendering, voice input) stays the same.
+   =================================================================== */
+
+// API_KEY is gone from the browser entirely — it now lives only in the
+// backend server's .env file (see server.js). DEMO_MODE is off because
+// that real backend route exists and this page calls it.
+const DEMO_MODE = false;
+
+const RAW_LISTINGS = [
+  {id:"d96fd35c",city:"Paris 17ème",rooms:5,area:93,title:"Bel appartement lumineux de 93 m² à Ternes",zipcode:"75017",agency:"La Bonne Agence",price:1095000,img:"https://media.apimo.pro/cache/188fee1bb8cb77b179177d829c444f68_611bbbdfb0_1920-original.jpg",features:["lumineux"]},
+  {id:"cf2b167e",city:"Paris 16ème",rooms:1,area:17.23,title:"Studio 17,23 M² - 6ème étage — Paris 16e",zipcode:"75016",agency:"La Bonne Agence",price:185000,img:"https://media.apimo.pro/cache/105cac8af03e7691bdd0d3e970fd8028_7f380171ba_1920-original.jpg",features:["studio"]},
+  {id:"b6526d58",city:"Paris 15ème",rooms:5,area:103,title:"Appartement familial avec balcon, jardin et parking",zipcode:"75015",agency:"La Bonne Agence",price:1235000,img:"https://media.apimo.pro/cache/a416abe1e79fafcf0634facb9d9a0992_85c06a79e1_1920-original.jpg",features:["balcon","parking","jardin"]},
+  {id:"b2786fff",city:"Paris 17ème",rooms:2,area:26.03,title:"Pont Cardinet - 2 pièces de 26m² - rdc, rue calme",zipcode:"75017",agency:"La Bonne Agence",price:252000,img:"https://media.apimo.pro/cache/c5e54ccde49271a46465613b34952233_b978633584_1920-original.jpg",features:["calme"]},
+  {id:"855ba646",city:"Paris 15ème",rooms:2,area:41,title:"2 pièces au pied du Métro Ségur",zipcode:"75015",agency:"La Bonne Agence",price:499200,img:"https://media.apimo.pro/cache/ce2bd218df0268bf694eb62ca7ed9d3b_f1c519a7eb_1920-original.jpg",features:[]},
+  {id:"3e542df2",city:"Paris 16ème",rooms:3,area:63,title:"Molitor — 3 pièces Paris 16e, calme et lumineux",zipcode:"75116",agency:"WeWest Immobilier",price:790000,img:"https://media.apimo.pro/cache/2e0541d5342bec08392479044a84b7c2_fe5d200075_1920-original.jpg",features:["calme","lumineux"]},
+  {id:"2b538a47",city:"Paris 16ème",rooms:5,area:160,title:"Paris 16e — 160 m² Flandrin avec jardin privatif",zipcode:"75016",agency:"WeWest Immobilier",price:2799000,img:"https://media.apimo.pro/cache/1c913e9f2707e888ff8e0b4a35bd43d1_62baccdf08_1920-original.jpg",features:["jardin"]},
+  {id:"f8a9d95c",city:"Paris 16ème",rooms:1,area:17.5,title:"Studio meublé clé en main — Paris 16e, Rue de Passy",zipcode:"75016",agency:"Conseils Copro",price:210000,img:"https://media.apimo.pro/cache/172fd9cb533a46b3fde83d2d8c657ddb_ee99f58d7b_1600-original.jpg",features:["meublé","studio"]},
+  {id:"be3c0266",city:"Paris 20ème",rooms:2,area:54.51,title:"Paris 20e — Charonne | T2 lumineux avec balcon",zipcode:"75020",agency:"RE/MAX Gold Estate",price:420000,img:"https://media.apimo.pro/cache/524065a3984c6fb9c9798c9a2b8cd128_5d46017451_1920-original.jpg",features:["balcon","lumineux"]},
+  {id:"aa101001",city:"Paris 15ème",rooms:3,area:63.98,title:"Paris 15ème — Charles Michels | Appartement 3 pièces lumineux",zipcode:"75015",agency:"Marnie Immobilier",price:649000,img:"https://media.apimo.pro/cache/a416abe1e79fafcf0634facb9d9a0992_85c06a79e1_1920-original.jpg",features:["lumineux"]},
+  {id:"aa101002",city:"Paris 15ème",rooms:3,area:69.14,title:"Paris 15ème — Sèvres-Lecourbe | Appartement 3 pièces lumineux",zipcode:"75015",agency:"Moriss Immobilier",price:775000,img:"https://media.apimo.pro/cache/1c913e9f2707e888ff8e0b4a35bd43d1_62baccdf08_1920-original.jpg",features:["lumineux"]},
+  {id:"aa101003",city:"Paris 15ème",rooms:1,area:33.1,title:"Paris 15ème — Métro Volontaires | Studio 33m²",zipcode:"75015",agency:"Marnie Immobilier",price:365000,img:"https://media.apimo.pro/cache/172fd9cb533a46b3fde83d2d8c657ddb_ee99f58d7b_1600-original.jpg",features:["studio"]},
+  {id:"aa101004",city:"Paris 15ème",rooms:5,area:106,title:"Paris 15ème — Lourmel | Grand appartement familial 5 pièces, jardin",zipcode:"75015",agency:"Moriss Immobilier",price:899999,img:"https://media.apimo.pro/cache/188fee1bb8cb77b179177d829c444f68_611bbbdfb0_1920-original.jpg",features:["lumineux","familial","jardin"]},
+  {id:"aa101005",city:"Paris 15ème",rooms:2,area:45.65,title:"Paris 15ème — 2 pièces lumineux 10ème étage vue panoramique",zipcode:"75015",agency:"BLG Patrimoine",price:399000,img:"https://media.apimo.pro/cache/ce2bd218df0268bf694eb62ca7ed9d3b_f1c519a7eb_1920-original.jpg",features:["lumineux","balcon","vue"]},
+  {id:"aa101006",city:"Paris 15ème",rooms:5,area:80,title:"Paris 15ème — 5 pièces familial avec parking, cave et jardin",zipcode:"75015",agency:"Garell Immobilier",price:670000,img:"https://media.apimo.pro/cache/2e0541d5342bec08392479044a84b7c2_fe5d200075_1920-original.jpg",features:["parking","cave","familial","jardin"]}
+];
+
+/* ===================================================================
+   DATA-QUALITY FIX (this is the real gap from the demo writeup):
+   the `features` arrays above were hand-typed per listing, which means
+   any listing whose tagger forgot a word (e.g. title says "calme" but
+   nobody added "calme" to features[]) would silently fail to match —
+   even though the AI correctly parsed "calme" out of the user's query.
+   That's not an AI problem, it's a data problem: real Flatway listings
+   almost certainly don't have a clean "features" field at all today.
+
+   Fix: derive features straight from the title text too, and merge
+   with whatever was hand-tagged, so a feature word appearing in the
+   title can never be missed. Also derive a "type" (Appartement/
+   Maison/Studio) per listing, because the AI extracts criteria.type
+   but until now nothing in scoreMatch() actually used it — the type
+   pill shown to the user was decorative, not functional. Fixed below.
+   =================================================================== */
+const FEATURE_KEYWORDS = ["balcon","parking","jardin","calme","lumineux","vue","cave","familial","meublé","studio","terrasse"];
+
+function deriveFeatures(l) {
+  const titleL = l.title.toLowerCase();
+  const found = FEATURE_KEYWORDS.filter(kw => titleL.includes(kw));
+  return Array.from(new Set([...(l.features || []), ...found]));
+}
+
+function deriveType(l) {
+  const titleL = l.title.toLowerCase();
+  if (titleL.includes('studio')) return 'Studio';
+  if (titleL.includes('maison')) return 'Maison';
+  return 'Appartement';
+}
+
+const LISTINGS = RAW_LISTINGS.map(l => ({
+  ...l,
+  features: deriveFeatures(l),
+  type: deriveType(l)
+}));
+
+let currentMatches = null;
+
+function setAndSearch(text) {
+  document.getElementById('aiInput').value = text;
+  doAiSearch();
+}
+
+// VOICE INPUT
+let recognition = null;
+let isListening = false;
+
+// ---------------------------------------------------------------------------
+// VOICE_VOCAB — known terms this demo actually cares about: arrondissement
+// numbers we cover, property type words, and the same feature keywords
+// already used to score listings. The browser's speech engine is generic
+// and often mishears niche real-estate terms even with clear audio; by
+// itself, raising maxAlternatives changes nothing — the fix is to actually
+// look at the extra alternatives the engine already considered internally
+// and pick whichever one contains terms we recognize, instead of blindly
+// trusting the engine's #1 guess. This can only help: if none of the
+// alternatives matches our vocabulary, it falls back to guess #1 exactly
+// like before.
+// ---------------------------------------------------------------------------
+const VOICE_VOCAB = [
+  "15","16","17","20","quinzième","seizième","dix-septième","vingtième",
+  "studio","appartement","maison",
+  ...FEATURE_KEYWORDS
+];
+
+function scoreTranscript(text) {
+  const t = text.toLowerCase();
+  return VOICE_VOCAB.reduce((score, term) => score + (t.includes(term) ? 1 : 0), 0);
+}
+
+function pickBestAlternative(resultList) {
+  let best = resultList[0].transcript;
+  let bestScore = scoreTranscript(best);
+  for (let i = 1; i < resultList.length; i++) {
+    const candidate = resultList[i].transcript;
+    const score = scoreTranscript(candidate);
+    if (score > bestScore) {
+      best = candidate;
+      bestScore = score;
+    }
+  }
+  return best;
+}
+
+function toggleMic() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert('La recherche vocale n\'est pas supportée par ce navigateur. Essayez Chrome ou Safari.');
+    return;
+  }
+
+  if (isListening) {
+    recognition && recognition.stop();
+    return;
+  }
+
+  recognition = new SpeechRecognition();
+  recognition.lang = 'fr-FR';
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 5;
+
+  const statusEl = document.getElementById('voiceStatus');
+  const micBtn = document.getElementById('micBtn');
+
+  recognition.onstart = () => {
+    isListening = true;
+    statusEl.style.display = 'flex';
+    micBtn.style.background = '#8B1A1A';
+  };
+
+  recognition.onresult = (event) => {
+    // event.results[0] holds up to 5 ranked alternatives for this utterance.
+    // Convert to a plain array so pickBestAlternative can scan all of them
+    // instead of only ever looking at index 0.
+    const alternatives = Array.from(event.results[0]);
+    const transcript = pickBestAlternative(alternatives);
+    document.getElementById('aiInput').value = transcript;
+    doAiSearch();
+  };
+
+  recognition.onerror = (event) => {
+    statusEl.style.display = 'none';
+    micBtn.style.background = 'rgba(255,255,255,0.12)';
+    isListening = false;
+    if (event.error !== 'no-speech' && event.error !== 'aborted') {
+      alert('Erreur de reconnaissance vocale : ' + event.error);
+    }
+  };
+
+  recognition.onend = () => {
+    isListening = false;
+    statusEl.style.display = 'none';
+    micBtn.style.background = 'rgba(255,255,255,0.12)';
+  };
+
+  recognition.start();
+}
+
+const SEARCH_SYSTEM_PROMPT = `Tu es un moteur de recherche immobilier pour Flatway.fr. Analyse la requête et réponds UNIQUEMENT en JSON valide:
+{"type":"Appartement|Maison|Studio","ville":"nom ville","arrondissement":"ex 15 ou 16","pieceMin":number|null,"surfaceMin":number|null,"prixMax":number|null,"features":["balcon","parking","lumineux","meublé","jardin","calme","vue","cave","familial",...],"summary":"résumé court en français"}
+Note : "jardin" couvre aussi "espace extérieur"/"terrasse au sol"/"vue sur jardin". "calme" couvre aussi "tranquille"/"peu de bruit"/"rue calme".`;
+
+/* This now always calls our own backend (server.js) instead of Anthropic
+   directly. The key lives only in the server's .env file — never in this
+   file, never in the browser. DEMO_MODE is kept as a flag so you can see
+   exactly what flipped (false = real backend) without deleting the history. */
+async function callSearchAPI(query) {
+  if (DEMO_MODE) {
+    throw new Error('DEMO_MODE is on but no client-side key path exists anymore — set DEMO_MODE=false.');
+  } else {
+    const res = await fetch('/api/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query })
+    });
+    if (!res.ok) throw new Error('Erreur serveur (' + res.status + ')');
+    return res.json();
+  }
+}
+
+// Hardened JSON parsing: models sometimes wrap JSON in prose or code fences.
+// Extract the first {...} block instead of assuming the whole string is clean JSON.
+function parseModelJSON(raw) {
+  const cleaned = raw.replace(/```json|```/g, '').trim();
+  const match = cleaned.match(/\{[\s\S]*\}/);
+  if (!match) {
+    console.error('No JSON object found in model output:', raw);
+    return {};
+  }
+  try {
+    return JSON.parse(match[0]);
+  } catch (e) {
+    console.error('Failed to parse model JSON:', match[0], e);
+    return {};
+  }
+}
+
+async function doAiSearch() {
+  const query = document.getElementById('aiInput').value.trim();
+  if (!query) return;
+
+  document.getElementById('criteriaRow').innerHTML = '<span class="loading-text">Analyse en cours...</span>';
+  document.getElementById('resultsCount').innerHTML = '<span class="loading-text">Recherche...</span>';
+
+  try {
+    const criteria = await callSearchAPI(query);
+    showResults(criteria, query);
+  } catch(e) {
+    document.getElementById('criteriaRow').innerHTML = '';
+    document.getElementById('resultsCount').textContent = 'Erreur : ' + e.message;
+  }
+}
+
+function scoreMatch(l, c, rawQuery) {
+  let score = 0; let total = 0;
+  const arr = (c.arrondissement || '').replace(/[^0-9]/g,'');
+
+  // Match arrondissement against the zipcode (e.g. "75017" -> "17"), not the
+  // accented city string ("17ème"/"17e") — string-matching accents is
+  // fragile (encoding differences, "1er" vs "01", etc); the zipcode is the
+  // actual structured field and should always be the source of truth.
+  if (arr) {
+    total += 4;
+    const zipArr = (l.zipcode || '').slice(-2).replace(/^0/, '');
+    if (zipArr === arr) score += 4;
+  }
+  // Skip generic "Paris" ville — all listings are Paris so it inflates everyone equally
+
+  // Type wasn't scored at all before this fix — the AI parsed "Studio" out
+  // of a query and showed it as a criteria tag, but it never affected which
+  // listings actually came back. Now it does, as a soft signal (not a hard
+  // filter, since "Studio" can be a fuzzy ask).
+  if (c.type) { total += 2; if (l.type === c.type) score += 2; }
+
+  if (c.pieceMin) { total += 2; if (l.rooms >= c.pieceMin) score += 2; else if (l.rooms >= c.pieceMin-1) score += 1; }
+  if (c.surfaceMin) { total += 2; if (l.area >= c.surfaceMin) score += 2; else if (l.area >= c.surfaceMin*0.85) score += 1; }
+  if (c.prixMax) { total += 3; if (l.price <= c.prixMax) score += 3; else if (l.price <= c.prixMax*1.1) score += 1; }
+  (c.features||[]).forEach(f => {
+    total += 2;
+    if (l.features.includes(f.toLowerCase()) || l.title.toLowerCase().includes(f.toLowerCase())) score += 2;
+  });
+
+  // Fallback: if no structured criteria matched, do keyword search on title
+  if (total === 0) {
+    const q = (rawQuery || '').toLowerCase();
+    const words = q.split(/\s+/).filter(w => w.length > 3);
+    const titleL = l.title.toLowerCase();
+    const matches = words.filter(w => titleL.includes(w) || l.city.toLowerCase().includes(w));
+    return matches.length > 0 ? Math.round((matches.length / words.length) * 80) : 0;
+  }
+  return Math.round((score/total)*100);
+}
+
+function showResults(criteria, rawQuery) {
+  // Show criteria tags
+  const row = document.getElementById('criteriaRow');
+  row.innerHTML = '<span class="criteria-label">Critères détectés :</span>';
+  const tags = [];
+  if (criteria.type) tags.push(criteria.type);
+  if (criteria.arrondissement) tags.push('Paris ' + criteria.arrondissement + 'ème');
+  else if (criteria.ville) tags.push(criteria.ville);
+  if (criteria.pieceMin) tags.push(criteria.pieceMin + '+ pièces');
+  if (criteria.surfaceMin) tags.push(criteria.surfaceMin + 'm² min');
+  if (criteria.prixMax) tags.push('< ' + Number(criteria.prixMax).toLocaleString('fr-FR') + '€');
+  (criteria.features||[]).forEach(f => tags.push(f));
+  tags.forEach(t => {
+    const el = document.createElement('span');
+    el.className = 'criteria-tag';
+    el.textContent = t;
+    row.appendChild(el);
+  });
+
+  // Score and filter
+  const scored = LISTINGS
+    .map(l => ({...l, score: scoreMatch(l, criteria, rawQuery)}))
+    .filter(l => l.score > 0)
+    .sort((a,b) => b.score - a.score);
+
+  currentMatches = scored.map(l => l.id);
+
+  document.getElementById('resultsCount').innerHTML =
+    '<strong>' + scored.length + ' bien' + (scored.length>1?'s':'') + '</strong> correspondant à votre recherche' +
+    (criteria.summary ? ' · <em style="color:#999;font-style:normal">' + criteria.summary + '</em>' : '');
+
+  renderListings(scored);
+  fetchRecommendation(rawQuery, scored);
+}
+
+/* ===================================================================
+   SMART SEARCH UPGRADE: ranked recommendation with reasoning.
+   The filter/score step above (scoreMatch) is unchanged plain math. This
+   is a SEPARATE, additive AI call: it looks at the already-scored top
+   candidates and explains which one it would actually recommend first —
+   "I'd recommend X first because..." — instead of leaving the buyer to
+   interpret a list of percentage-match badges themselves. It can only ever
+   pick from the candidates it's handed; it never sees excluded listings.
+   =================================================================== */
+async function fetchRecommendation(rawQuery, scored) {
+  const box = document.getElementById('recoBox');
+  if (!scored.length) { box.innerHTML = ''; return; }
+
+  box.innerHTML = '<div class="loading-text">Recommandation en cours...</div>';
+
+  const candidates = scored.slice(0, 5).map(l => ({
+    id: l.id, title: l.title, price: l.price, area: l.area,
+    rooms: l.rooms, city: l.city, features: l.features, score: l.score
+  }));
+
+  try {
+    const res = await fetch('/api/recommend', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: rawQuery, candidates })
+    });
+    if (!res.ok) throw new Error('Erreur serveur (' + res.status + ')');
+    const reco = await res.json();
+    renderRecommendation(reco, scored);
+  } catch (e) {
+    box.innerHTML = '';
+    console.error('Recommendation failed:', e.message);
+  }
+}
+
+function renderRecommendation(reco, scored) {
+  const box = document.getElementById('recoBox');
+  const picked = scored.find(l => l.id === reco.recommendedId);
+  if (!picked) { box.innerHTML = ''; return; }
+
+  let runnerUpHTML = '';
+  if (reco.runnerUpId) {
+    const runnerUp = scored.find(l => l.id === reco.runnerUpId);
+    if (runnerUp && reco.runnerUpReasoning) {
+      runnerUpHTML = '<div class="reco-runnerup">Aussi intéressant : <b>' + runnerUp.title + '</b> — ' + reco.runnerUpReasoning + '</div>';
+    }
+  }
+
+  box.innerHTML =
+    '<div class="reco-box">' +
+      '<div class="reco-label">⭐ Notre recommandation — IA</div>' +
+      '<div class="reco-pick"><b>' + picked.title + '</b> — ' + Number(picked.price).toLocaleString('fr-FR') + ' €</div>' +
+      '<div class="reco-reason">' + (reco.reasoning || '') + '</div>' +
+      runnerUpHTML +
+    '</div>';
+}
+
+function renderListings(listings) {
+  const container = document.getElementById('listings');
+  container.innerHTML = '';
+
+  if (listings.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:48px;color:#999;font-size:14px;">Aucun bien trouvé pour ces critères.<br><span style="font-size:13px;">Essayez d\'élargir votre recherche.</span></div>';
+    return;
+  }
+
+  listings.forEach((l, idx) => { try {
+    const isMatch = currentMatches && currentMatches.includes(l.id);
+    const a = document.createElement('div');
+    a.className = 'listing-card' + (isMatch ? ' ai-match' : '');
+    a.style.cursor = 'default';
+
+    const img = document.createElement('img');
+    img.className = 'listing-img';
+    img.src = l.img;
+    img.alt = l.title;
+    img.onerror = function(){ this.src=''; this.style.background='#f0eded'; };
+
+    const body = document.createElement('div');
+    body.className = 'listing-body';
+
+    const scoreHTML = isMatch && l.score ? '<span class="ai-match-badge">✓ ' + l.score + '% match</span>' : '';
+
+    body.innerHTML =
+      '<div>' +
+        '<div class="listing-top">' +
+          '<div>' +
+            '<div class="listing-title">' + l.title + ' ' + scoreHTML + '</div>' +
+            '<div class="listing-meta">' +
+              '<span>📐 ' + l.area + ' m²</span>' +
+              '<span>🚪 ' + l.rooms + ' pièce' + (l.rooms>1?'s':'') + '</span>' +
+              '<span>📍 ' + l.city + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="listing-price">' + Number(l.price).toLocaleString('fr-FR') + ' €</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="listing-footer">' +
+        '<div class="listing-agency"><div class="listing-agency-dot"></div>' + l.agency + '</div>' +
+        '<button class="rdv-btn" onclick="alert(&quot;Disponible dans l\'application Flatway&quot;)">Voir l\'annonce</button>' +
+      '</div>';
+
+    a.appendChild(img);
+    a.appendChild(body);
+    container.appendChild(a);
+  } catch(e){ console.error('Listing error at index', idx, l, e); }});
+}
+
+// Show all listings on load
+renderListings(LISTINGS);
+</script>
+</body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Flatway — Estimation de prix indicative</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #f5f5f5; color: #1a1a1a; }
+
+  .nav { background: #1a1a2e; padding: 0 40px; display: flex; align-items: center; height: 60px; gap: 32px; position: sticky; top: 0; z-index: 100; }
+  .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .nav-logo img { width: 28px; height: 28px; border-radius: 6px; }
+  .nav-logo span { font-size: 18px; font-weight: 600; color: #fff; letter-spacing: -0.3px; }
+  .nav-links { display: flex; gap: 24px; margin-left: 8px; }
+  .nav-links a { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 14px; }
+  .nav-links a:hover, .nav-links a.active { color: #fff; }
+  .nav-right { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+  .nav-pro { font-size: 13px; color: rgba(255,255,255,0.6); text-decoration: none; }
+  .nav-login { font-size: 13px; color: #fff; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 6px 14px; text-decoration: none; }
+
+  .main { max-width: 1080px; margin: 0 auto; padding: 32px 28px 60px; }
+
+  .page-head h1 { font-size: 24px; font-weight: 600; margin-bottom: 6px; }
+  .page-head p { font-size: 14px; color: #777; line-height: 1.5; max-width: 760px; }
+  .page-head p b { color: #1a1a1a; }
+
+  .disclaimer {
+    background: #fef0f0; border: 1px solid #f0c0c0; border-radius: 8px;
+    padding: 12px 16px; font-size: 13px; color: #8B1A1A; margin: 18px 0 24px; line-height: 1.5;
+  }
+  .disclaimer b { font-weight: 600; }
+
+  .grid { display: grid; grid-template-columns: 320px 1fr; gap: 20px; margin-top: 4px; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+  .card { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; padding: 20px; }
+  .card h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: #888; font-weight: 600; margin-bottom: 14px; }
+
+  label { display: block; font-size: 12px; font-weight: 500; color: #555; margin: 14px 0 6px; }
+  label:first-of-type { margin-top: 0; }
+  input, select, textarea {
+    width: 100%; border: 1px solid #e0e0e0; border-radius: 7px; padding: 9px 10px;
+    font-size: 13px; font-family: 'Inter', sans-serif; color: #1a1a1a; outline: none; background: #fafafa;
+  }
+  input:focus, select:focus, textarea:focus { border-color: #8B1A1A; background: #fff; }
+  textarea { resize: vertical; min-height: 64px; line-height: 1.4; }
+
+  .ai-tag {
+    display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600;
+    color: #8B1A1A; background: #fef0f0; border: 1px solid #f0c0c0; border-radius: 10px;
+    padding: 2px 8px; text-transform: uppercase; letter-spacing: 0.04em; margin-left: 6px;
+  }
+  .ai-dot-sm { width: 5px; height: 5px; background: #8B1A1A; border-radius: 50%; }
+
+  .btn-primary {
+    width: 100%; margin-top: 18px; background: #8B1A1A; color: #fff; border: none; border-radius: 7px;
+    padding: 11px; font-size: 14px; font-weight: 500; font-family: 'Inter', sans-serif; cursor: pointer;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+
+  .note { font-size: 11px; color: #999; margin-top: 12px; line-height: 1.5; }
+  .real-badge { font-size: 10px; color: #2e7d32; background: #e8f5e9; border-radius: 8px; padding: 1px 6px; margin-left: 6px; font-weight: 500; }
+
+  .range-box { text-align: center; padding: 20px 0 10px; }
+  .range-amount { font-size: 28px; font-weight: 700; color: #1a1a1a; }
+  .range-sub { font-size: 12px; color: #888; margin-top: 4px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 14px; }
+  th, td { padding: 7px 8px; text-align: left; border-bottom: 1px solid #eee; }
+  th { color: #888; font-weight: 500; font-size: 10px; text-transform: uppercase; }
+  .empty { color: #999; font-size: 13px; padding: 30px 0; text-align: center; }
+
+  .ai-box {
+    margin-top: 16px; padding: 14px 16px; border-radius: 8px; background: #f7f7fb;
+    border: 1px solid #e8e8f0; font-size: 13px; color: #444; line-height: 1.6; display: none;
+  }
+  .ai-box.show { display: block; }
+  .ai-box ul { margin: 8px 0 0 18px; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="#">
+    <img src="https://flatway.fr/_next/static/media/appIcon.4beb43c9.webp" alt="Flatway"/>
+    <span>Flatway</span>
+  </a>
+  <div class="nav-links">
+    <a href="#">Estimer</a>
+    <a href="index.html">Acheter</a>
+    <a href="#" class="active">Vendre — idée nouvelle</a>
+  </div>
+  <div class="nav-right">
+    <a href="#" class="nav-pro">Vous êtes professionnel ?</a>
+    <a href="#" class="nav-login">Se connecter</a>
+  </div>
+</nav>
+
+<main class="main">
+  <div class="page-head">
+    <h1>Estimation de prix indicative (pour le vendeur)</h1>
+    <p>À l'étape "Mise en vente" du flux Flatway, le vendeur fixe lui-même un prix. Cet outil propose une fourchette indicative basée sur des biens comparables réellement en vente sur Flatway, pour aider à ne pas se tromper de palier — pas pour remplacer une estimation officielle.</p>
+  </div>
+
+  <div class="disclaimer">
+    <b>Idée nouvelle, pas une fonctionnalité existante.</b> Les 15 biens comparables utilisés ici sont de vraies annonces Flatway.fr (mêmes données que la démo de recherche) — mais 15 biens sur 4 arrondissements est un échantillon très réduit pour une vraie estimation. Les valeurs atypiques (€/m² hors norme) sont désormais exclues du calcul quand l'échantillon le permet — mais aucune donnée de date, d'état du bien, ou de statut vendu/en vente n'existe dans ce jeu de données : impossible de filtrer sur ces critères sans données réelles supplémentaires.
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Mon bien</h2>
+      <label>Arrondissement</label>
+      <select id="arr"></select>
+      <label>Type de bien</label>
+      <select id="ptype">
+        <option value="Appartement">Appartement</option>
+        <option value="Studio">Studio</option>
+        <option value="Maison">Maison</option>
+      </select>
+      <label>Surface (m²)</label>
+      <input type="number" id="area" value="55" step="1">
+
+      <label>Précisions (optionnel) <span class="ai-tag"><span class="ai-dot-sm"></span>IA</span></label>
+      <textarea id="propNote" placeholder="Ex : rénové entièrement en 2023, dernier étage avec vue dégagée..."></textarea>
+
+      <button class="btn-primary" onclick="runEstimate()">Estimer une fourchette de prix</button>
+      <p class="note">Méthode : prix moyen au m² des biens comparables réels (même arrondissement et type si possible, sinon échantillon le plus proche disponible) × surface saisie, ± 15%.</p>
+    </div>
+
+    <div class="card" id="resultCard">
+      <h2>Estimation</h2>
+      <div class="empty">Renseignez le bien à gauche pour générer une estimation.</div>
+    </div>
+  </div>
+</main>
+
+<script>
+// ---------------------------------------------------------------------------
+// COMPS — the same 15 real Flatway listings used in the search demo
+// (id, arrondissement via zipcode, type, area, price). Real data, not
+// invented for this demo. derivedType mirrors the logic already used and
+// verified in index.html.
+// ---------------------------------------------------------------------------
+const RAW_LISTINGS = [
+  {id:"d96fd35c",zipcode:"75017",area:93,price:1095000,title:"Bel appartement lumineux de 93 m² à Ternes"},
+  {id:"cf2b167e",zipcode:"75016",area:17.23,price:185000,title:"Studio 17,23 M² - 6ème étage — Paris 16e"},
+  {id:"b6526d58",zipcode:"75015",area:103,price:1235000,title:"Appartement familial avec balcon, jardin et parking"},
+  {id:"b2786fff",zipcode:"75017",area:26.03,price:252000,title:"Pont Cardinet - 2 pièces de 26m² - rdc, rue calme"},
+  {id:"855ba646",zipcode:"75015",area:41,price:499200,title:"2 pièces au pied du Métro Ségur"},
+  {id:"3e542df2",zipcode:"75116",area:63,price:790000,title:"Molitor — 3 pièces Paris 16e, calme et lumineux"},
+  {id:"2b538a47",zipcode:"75016",area:160,price:2799000,title:"Paris 16e — 160 m² Flandrin avec jardin privatif"},
+  {id:"f8a9d95c",zipcode:"75016",area:17.5,price:210000,title:"Studio meublé clé en main — Paris 16e, Rue de Passy"},
+  {id:"be3c0266",zipcode:"75020",area:54.51,price:420000,title:"Paris 20e — Charonne | T2 lumineux avec balcon"},
+  {id:"aa101001",zipcode:"75015",area:63.98,price:649000,title:"Paris 15ème — Charles Michels | Appartement 3 pièces lumineux"},
+  {id:"aa101002",zipcode:"75015",area:69.14,price:775000,title:"Paris 15ème — Sèvres-Lecourbe | Appartement 3 pièces lumineux"},
+  {id:"aa101003",zipcode:"75015",area:33.1,price:365000,title:"Paris 15ème — Métro Volontaires | Studio 33m²"},
+  {id:"aa101004",zipcode:"75015",area:106,price:899999,title:"Paris 15ème — Lourmel | Grand appartement familial 5 pièces, jardin"},
+  {id:"aa101005",zipcode:"75015",area:45.65,price:399000,title:"Paris 15ème — 2 pièces lumineux 10ème étage vue panoramique"},
+  {id:"aa101006",zipcode:"75015",area:80,price:670000,title:"Paris 15ème — 5 pièces familial avec parking, cave et jardin"},
+];
+
+function deriveType(l){
+  const t = l.title.toLowerCase();
+  if (t.includes('studio')) return 'Studio';
+  if (t.includes('maison')) return 'Maison';
+  return 'Appartement';
+}
+const COMPS = RAW_LISTINGS.map(l => ({ ...l, arr: l.zipcode.slice(-2).replace(/^0/, ''), type: deriveType(l), pricePerM2: l.price / l.area }));
+
+const ARR_OPTIONS = ["15","16","17","20"];
+document.getElementById('arr').innerHTML = ARR_OPTIONS.map(a => `<option value="${a}">Paris ${a}e</option>`).join('');
+
+async function explainEstimate(low, high, compCount, note){
+  const res = await fetch('/api/price-explain', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ low, high, compCount, note })
+  });
+  if (!res.ok) throw new Error('Erreur serveur (' + res.status + ')');
+  return res.json();
+}
+
+function runEstimate(){
+  const arr = document.getElementById('arr').value;
+  const type = document.getElementById('ptype').value;
+  const area = parseFloat(document.getElementById('area').value) || 0;
+  const note = document.getElementById('propNote').value.trim();
+
+  // Tier 1: same arrondissement + same type. Tier 2: same arrondissement only.
+  // Tier 3: same type only (citywide across the 4 covered arrondissements).
+  let comps = COMPS.filter(c => c.arr === arr && c.type === type);
+  let tierLabel = 'mêmes arrondissement et type';
+  if (comps.length < 2) {
+    comps = COMPS.filter(c => c.arr === arr);
+    tierLabel = 'même arrondissement, tous types';
+  }
+  if (comps.length < 2) {
+    comps = COMPS.filter(c => c.type === type);
+    tierLabel = 'même type, tous arrondissements couverts';
+  }
+  if (comps.length === 0) comps = COMPS;
+
+  // ---------------------------------------------------------------------------
+  // Outlier exclusion (IQR method): with a tiny comp pool, one unusually
+  // priced listing can drag the whole average off — e.g. a 2.8M€ listing
+  // sitting next to a 185k€ studio. This excludes comps whose price/m² falls
+  // outside 1.5x the interquartile range of the selected group, the same
+  // way it's commonly done in real comp-based valuation. Skipped below 4
+  // comps because quartiles aren't meaningful on that few data points —
+  // said explicitly in the UI rather than silently doing nothing.
+  // ---------------------------------------------------------------------------
+  let excluded = [];
+  let outlierNote = '';
+  if (comps.length >= 4) {
+    const sorted = [...comps].sort((a,b) => a.pricePerM2 - b.pricePerM2);
+    const q1 = sorted[Math.floor(sorted.length * 0.25)].pricePerM2;
+    const q3 = sorted[Math.floor(sorted.length * 0.75)].pricePerM2;
+    const iqr = q3 - q1;
+    const lowerBound = q1 - 1.5 * iqr;
+    const upperBound = q3 + 1.5 * iqr;
+    const kept = comps.filter(c => c.pricePerM2 >= lowerBound && c.pricePerM2 <= upperBound);
+    excluded = comps.filter(c => c.pricePerM2 < lowerBound || c.pricePerM2 > upperBound);
+    if (excluded.length > 0 && kept.length >= 2) {
+      comps = kept;
+      outlierNote = `${excluded.length} bien(s) exclu(s) comme valeur(s) atypique(s) (€/m² hors norme du groupe) : ${excluded.map(c => c.title).join(', ')}.`;
+    }
+  } else {
+    outlierNote = 'Échantillon trop petit (moins de 4 biens) pour détecter des valeurs atypiques de façon fiable — aucune exclusion appliquée.';
+  }
+
+  const avgPricePerM2 = comps.reduce((s,c) => s + c.pricePerM2, 0) / comps.length;
+  const mid = avgPricePerM2 * area;
+  const low = mid * 0.85;
+  const high = mid * 1.15;
+
+  let html = `<h2>Estimation <span style="color:#999;font-weight:400;font-size:11px;text-transform:none;">— ${type}, Paris ${arr}e, ${area} m²</span></h2>`;
+  html += `
+    <div class="range-box">
+      <div class="range-amount">${Math.round(low).toLocaleString('fr-FR')} € — ${Math.round(high).toLocaleString('fr-FR')} €</div>
+      <div class="range-sub">basé sur ${comps.length} bien(s) comparable(s) réel(s) — ${tierLabel} <span class="real-badge">données réelles</span></div>
+    </div>
+    <table>
+      <tr><th>Annonce comparable</th><th>Surface</th><th>Prix</th><th>€/m²</th></tr>
+      ${comps.map(c => `<tr><td>${c.title}</td><td>${c.area} m²</td><td>${c.price.toLocaleString('fr-FR')} €</td><td>${Math.round(c.pricePerM2).toLocaleString('fr-FR')} €</td></tr>`).join('')}
+    </table>
+    <p class="note">${outlierNote}</p>
+    <div class="ai-box" id="aiBox">Analyse en cours…</div>
+  `;
+  document.getElementById('resultCard').innerHTML = html;
+  document.getElementById('aiBox').className = 'ai-box show';
+
+  explainEstimate(low, high, comps.length, note).then(result => {
+    document.getElementById('aiBox').innerHTML =
+      `${result.explanation || ''}` +
+      (result.caveats && result.caveats.length ? `<ul>${result.caveats.map(c => `<li>${c}</li>`).join('')}</ul>` : '');
+  }).catch(e => {
+    document.getElementById('aiBox').innerHTML = '<span style="color:#c0392b;">Erreur d\'analyse IA : ' + e.message + '</span>';
+  });
+}
+</script>
+</body>
+</html>

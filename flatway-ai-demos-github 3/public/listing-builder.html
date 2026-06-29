@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Flatway — Générateur d'annonce à partir de photos</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #f5f5f5; color: #1a1a1a; }
+
+  .nav { background: #1a1a2e; padding: 0 40px; display: flex; align-items: center; height: 60px; gap: 32px; }
+  .nav-logo span { font-size: 18px; font-weight: 600; color: #fff; letter-spacing: -0.3px; }
+
+  .page { max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; }
+  .page-head { margin-bottom: 28px; }
+  .page-head h1 { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
+  .page-head p { font-size: 14px; color: #666; line-height: 1.5; }
+
+  .card { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 24px; margin-bottom: 20px; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 12px; font-weight: 500; color: #555; margin-bottom: 6px; }
+  .field input, .field textarea {
+    width: 100%; border: 1px solid #e0e0e0; border-radius: 7px; padding: 9px 11px;
+    font-size: 14px; font-family: 'Inter', sans-serif; color: #1a1a1a; outline: none; background: #fafafa;
+  }
+  .field input:focus, .field textarea:focus { border-color: #8B1A1A; background: #fff; }
+  .field textarea { resize: vertical; min-height: 60px; }
+
+  .dropzone {
+    border: 2px dashed #ddd; border-radius: 8px; padding: 24px; text-align: center;
+    font-size: 13px; color: #888; cursor: pointer; background: #fafafa;
+  }
+  .dropzone:hover { border-color: #8B1A1A; color: #8B1A1A; }
+  .thumbs { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .thumbs img { width: 72px; height: 72px; object-fit: cover; border-radius: 6px; border: 1px solid #e5e5e5; }
+
+  .gen-btn {
+    background: #8B1A1A; color: #fff; border: none; border-radius: 7px; padding: 11px 20px;
+    font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'Inter', sans-serif;
+  }
+  .gen-btn:hover { background: #6f1414; }
+  .gen-btn:disabled { background: #ccc; cursor: default; }
+
+  .result { display: none; }
+  .result.visible { display: block; }
+  .listing-title { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
+  .section-label {
+    display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: 0.04em;
+    text-transform: uppercase; padding: 1px 6px; border-radius: 4px; margin-bottom: 6px;
+  }
+  .section-label.ai { background: #f3e8e8; color: #8B1A1A; }
+  .section-label.uncertain { background: #fff3e0; color: #9a6700; }
+  .section-block { margin-bottom: 18px; }
+  .listing-desc { font-size: 14px; line-height: 1.7; color: #2a2a2a; }
+  .feature-list, .uncertain-list { font-size: 13px; line-height: 1.7; color: #2a2a2a; padding-left: 18px; }
+
+  .status { font-size: 13px; color: #888; margin-top: 12px; }
+  .status.error { color: #8B1A1A; }
+  .status.success { color: #2e7d32; }
+  .real-tag { font-size: 11px; color: #999; margin-top: 18px; line-height: 1.5; }
+
+  .verify-block {
+    margin-top: 20px; padding-top: 16px; border-top: 1px solid #f0f0f0;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .verify-block input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; cursor: pointer; }
+  .verify-block label { font-size: 13px; color: #333; line-height: 1.5; cursor: pointer; }
+  .copy-btn {
+    background: #fff; color: #8B1A1A; border: 1px solid #8B1A1A; border-radius: 7px;
+    padding: 9px 16px; font-size: 13px; font-weight: 500; cursor: pointer;
+    font-family: 'Inter', sans-serif; margin-top: 14px;
+  }
+  .copy-btn:disabled { background: #f5f5f5; color: #bbb; border-color: #ddd; cursor: not-allowed; }
+  .copy-btn:not(:disabled):hover { background: #fdf2f2; }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <a class="nav-logo" href="index.html" style="text-decoration:none;"><span>Flatway</span></a>
+</div>
+
+<div class="page">
+  <div class="page-head">
+    <h1>Brouillon d'annonce à partir de photos</h1>
+    <p>
+      Un vendeur fournit une adresse et quelques photos du bien. Un modèle d'IA capable d'analyser des
+      images regarde les photos et rédige un brouillon d'annonce (titre, description, caractéristiques
+      visibles). C'est un vrai usage de l'IA : interpréter des photos non structurées n'est pas quelque
+      chose qu'on peut faire avec des règles fixes.
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="field">
+      <label>Adresse du bien</label>
+      <input type="text" id="address" placeholder="ex: 12 rue de la Pompe, Paris 16e" value="12 rue de la Pompe, Paris 16e"/>
+    </div>
+    <div class="field">
+      <label>Photos du bien (jusqu'à 6)</label>
+      <div class="dropzone" id="dropzone">Cliquer ou glisser des photos ici</div>
+      <input type="file" id="fileInput" accept="image/*" multiple style="display:none;"/>
+      <div class="thumbs" id="thumbs"></div>
+    </div>
+    <div class="field">
+      <label>Notes additionnelles (optionnel)</label>
+      <textarea id="notes" placeholder="ex: appartement au 4e étage avec ascenseur"></textarea>
+    </div>
+    <button class="gen-btn" id="genBtn" onclick="generateListing()">Générer le brouillon d'annonce</button>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="card result" id="resultCard">
+    <div class="listing-title" id="listingTitle"></div>
+
+    <div class="section-block">
+      <span class="section-label ai">Décrit par l'IA</span>
+      <div class="listing-desc" id="listingDesc"></div>
+    </div>
+
+    <div class="section-block">
+      <span class="section-label ai">Caractéristiques identifiées sur les photos</span>
+      <ul class="feature-list" id="featureList"></ul>
+    </div>
+
+    <div class="section-block" id="uncertainBlock">
+      <span class="section-label uncertain">Non vérifiable depuis les photos — à compléter manuellement</span>
+      <ul class="uncertain-list" id="uncertainList"></ul>
+    </div>
+
+    <div class="verify-block">
+      <input type="checkbox" id="verifyCheck" onchange="updateCopyState()"/>
+      <label for="verifyCheck">
+        J'ai relu cette description et vérifié qu'elle correspond bien aux photos fournies (aucun détail
+        inventé ou inexact). L'IA peut faire des erreurs — cette case confirme une relecture humaine avant
+        toute utilisation de ce brouillon.
+      </label>
+    </div>
+    <div>
+      <button class="copy-btn" id="copyBtn" disabled onclick="copyListing()">Copier l'annonce vérifiée</button>
+    </div>
+    <div class="status" id="copyStatus"></div>
+  </div>
+
+  <p class="real-tag">
+    Limite honnête : l'IA décrit uniquement ce qui est visible sur les photos. Elle ne peut pas vérifier
+    la surface exacte en m², la classe DPE officielle, l'année de construction ou le prix — ces champs
+    doivent toujours être saisis par un humain. Ce brouillon est fait pour être relu et corrigé, pas
+    publié automatiquement.
+  </p>
+</div>
+
+<script>
+let selectedImages = []; // { mediaType, data (base64, no prefix), previewUrl }
+
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const thumbs = document.getElementById('thumbs');
+
+dropzone.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.style.borderColor = '#8B1A1A'; });
+dropzone.addEventListener('dragleave', () => { dropzone.style.borderColor = '#ddd'; });
+dropzone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropzone.style.borderColor = '#ddd';
+  handleFiles(e.dataTransfer.files);
+});
+
+function handleFiles(files) {
+  const status = document.getElementById('status');
+  for (const file of files) {
+    if (selectedImages.length >= 6) {
+      status.textContent = 'Maximum 6 photos pour cette démo.';
+      status.className = 'status error';
+      break;
+    }
+    if (!file.type.startsWith('image/')) continue;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      const base64 = dataUrl.split(',')[1];
+      selectedImages.push({ mediaType: file.type, data: base64, previewUrl: dataUrl });
+      renderThumbs();
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function renderThumbs() {
+  thumbs.innerHTML = '';
+  selectedImages.forEach((img) => {
+    const el = document.createElement('img');
+    el.src = img.previewUrl;
+    thumbs.appendChild(el);
+  });
+}
+
+async function generateListing() {
+  const address = document.getElementById('address').value.trim();
+  const notes = document.getElementById('notes').value.trim();
+  const status = document.getElementById('status');
+  const btn = document.getElementById('genBtn');
+  const resultCard = document.getElementById('resultCard');
+
+  if (!address) {
+    status.textContent = "Indique une adresse.";
+    status.className = 'status error';
+    return;
+  }
+  if (selectedImages.length === 0) {
+    status.textContent = "Ajoute au moins une photo.";
+    status.className = 'status error';
+    return;
+  }
+
+  btn.disabled = true;
+  status.textContent = 'Analyse des photos en cours...';
+  status.className = 'status';
+  resultCard.classList.remove('visible');
+
+  try {
+    const fullAddress = notes ? `${address} (notes: ${notes})` : address;
+    const res = await fetch('/api/listing-builder', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        address: fullAddress,
+        images: selectedImages.map(img => ({ mediaType: img.mediaType, data: img.data }))
+      })
+    });
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      status.textContent = 'Erreur : ' + (data.error || 'réponse inattendue du serveur.');
+      status.className = 'status error';
+      return;
+    }
+
+    document.getElementById('listingTitle').textContent = data.title || '(titre non généré)';
+    document.getElementById('listingDesc').textContent = data.description || '(description non générée)';
+
+    const featureList = document.getElementById('featureList');
+    featureList.innerHTML = '';
+    (data.identifiedFeatures || []).forEach(f => {
+      const li = document.createElement('li');
+      li.textContent = f;
+      featureList.appendChild(li);
+    });
+
+    const uncertainList = document.getElementById('uncertainList');
+    const uncertainBlock = document.getElementById('uncertainBlock');
+    uncertainList.innerHTML = '';
+    if (data.uncertain && data.uncertain.length > 0) {
+      uncertainBlock.style.display = '';
+      data.uncertain.forEach(u => {
+        const li = document.createElement('li');
+        li.textContent = u;
+        uncertainList.appendChild(li);
+      });
+    } else {
+      uncertainBlock.style.display = 'none';
+    }
+
+    // New draft generated — reset the verification gate. A confirmation given
+    // on a previous draft must never carry over to a new one.
+    document.getElementById('verifyCheck').checked = false;
+    document.getElementById('copyStatus').textContent = '';
+    updateCopyState();
+
+    resultCard.classList.add('visible');
+    status.textContent = '';
+  } catch (e) {
+    status.textContent = 'Erreur réseau : ' + e.message;
+    status.className = 'status error';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function updateCopyState() {
+  document.getElementById('copyBtn').disabled = !document.getElementById('verifyCheck').checked;
+}
+
+function copyListing() {
+  const title = document.getElementById('listingTitle').textContent;
+  const desc = document.getElementById('listingDesc').textContent;
+  const features = Array.from(document.querySelectorAll('#featureList li')).map(li => '- ' + li.textContent).join('\n');
+  const text = `${title}\n\n${desc}\n\nCaractéristiques :\n${features}`;
+
+  navigator.clipboard.writeText(text).then(() => {
+    const copyStatus = document.getElementById('copyStatus');
+    copyStatus.textContent = 'Annonce copiée — relecture confirmée.';
+    copyStatus.className = 'status success';
+  }).catch(() => {
+    const copyStatus = document.getElementById('copyStatus');
+    copyStatus.textContent = "Impossible de copier automatiquement — sélectionne et copie le texte manuellement.";
+    copyStatus.className = 'status error';
+  });
+}
+</script>
+
+</body>
+</html>

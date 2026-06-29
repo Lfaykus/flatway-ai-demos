@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Flatway — Expert de quartier</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #f5f5f5; color: #1a1a1a; }
+
+  .nav { background: #1a1a2e; padding: 0 40px; display: flex; align-items: center; height: 60px; gap: 32px; position: sticky; top: 0; z-index: 100; }
+  .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .nav-logo img { width: 28px; height: 28px; border-radius: 6px; }
+  .nav-logo span { font-size: 18px; font-weight: 600; color: #fff; letter-spacing: -0.3px; }
+  .nav-links { display: flex; gap: 24px; margin-left: 8px; }
+  .nav-links a { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 14px; }
+  .nav-links a:hover, .nav-links a.active { color: #fff; }
+  .nav-right { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+  .nav-pro { font-size: 13px; color: rgba(255,255,255,0.6); text-decoration: none; }
+  .nav-login { font-size: 13px; color: #fff; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 6px 14px; text-decoration: none; }
+
+  .main { max-width: 1080px; margin: 0 auto; padding: 32px 28px 60px; }
+  .page-head h1 { font-size: 24px; font-weight: 600; margin-bottom: 6px; }
+  .page-head p { font-size: 14px; color: #777; line-height: 1.5; max-width: 760px; }
+
+  .disclaimer {
+    background: #fef0f0; border: 1px solid #f0c0c0; border-radius: 8px;
+    padding: 12px 16px; font-size: 13px; color: #8B1A1A; margin: 18px 0 24px; line-height: 1.5;
+  }
+  .disclaimer b { font-weight: 600; }
+
+  .picker-row { display: flex; gap: 10px; align-items: center; margin-bottom: 24px; flex-wrap: wrap; }
+  .picker-row select {
+    font-family: 'Inter', sans-serif; font-size: 13px; padding: 9px 12px; border-radius: 8px;
+    border: 1px solid #ddd; background: #fff; color: #1a1a1a;
+  }
+  .picker-row button {
+    background: #8B1A1A; color: #fff; border: none; border-radius: 8px;
+    padding: 9px 18px; font-size: 13px; font-weight: 500; font-family: 'Inter', sans-serif; cursor: pointer;
+  }
+  .picker-row button:hover { opacity: 0.9; }
+
+  .section-label { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.06em; margin: 28px 0 10px; }
+  .section-label.ai::before { content: '✦ '; color: #8B1A1A; }
+  .section-label.rule::before { content: '⚙ '; }
+
+  .ai-card { background: #fff; border: 1.5px solid #8B1A1A; border-radius: 10px; padding: 18px 20px; }
+  .ai-card .summary { font-size: 14px; line-height: 1.6; margin-bottom: 14px; }
+  .ai-card .sub-label { font-size: 11px; font-weight: 600; color: #8B1A1A; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.04em; }
+  .ai-card .sub-block { margin-bottom: 12px; }
+  .ai-card .sub-text { font-size: 13px; line-height: 1.5; color: #444; }
+
+  .raw-data-card {
+    background: #fafafa; border: 1px dashed #ccc; border-radius: 8px; padding: 14px 16px;
+    font-size: 12px; color: #777; margin-bottom: 16px; line-height: 1.6;
+  }
+  .raw-data-card b { color: #555; }
+
+  .commute-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; padding: 18px 20px; }
+  .commute-row { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .commute-row select { font-family: 'Inter', sans-serif; font-size: 13px; padding: 8px 10px; border-radius: 8px; border: 1px solid #ddd; }
+  .commute-results { display: flex; gap: 14px; flex-wrap: wrap; }
+  .commute-pill {
+    background: #f5f5f5; border-radius: 10px; padding: 10px 16px; font-size: 13px; color: #333;
+    display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 90px;
+  }
+  .commute-pill .mode { font-size: 18px; }
+  .commute-pill .mins { font-weight: 600; font-size: 15px; }
+  .commute-note { font-size: 11px; color: #999; margin-top: 10px; }
+
+  .loading-text { font-size: 13px; color: #999; font-style: italic; }
+  .error-text { font-size: 13px; color: #c0392b; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="index.html">
+    <img src="https://flatway.fr/_next/static/media/appIcon.4beb43c9.webp" alt="Flatway"/>
+    <span>Flatway</span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Acheter</a>
+    <a href="fee-transparency.html">Vendre</a>
+    <a href="#" class="active">Quartier — idée nouvelle</a>
+  </div>
+  <div class="nav-right">
+    <a href="#" class="nav-pro">Vous êtes professionnel ?</a>
+    <a href="#" class="nav-login">Se connecter</a>
+  </div>
+</nav>
+
+<main class="main">
+  <div class="page-head">
+    <h1>Comprendre un quartier avant de visiter</h1>
+    <p>Un acheteur qui ne connaît pas un arrondissement doit aujourd'hui chercher lui-même sur plusieurs sites. Ici : un résumé en langage clair du quartier, et un calcul séparé du temps de trajet vers un point de référence — deux choses différentes, l'une écrite par l'IA, l'autre un simple calcul.</p>
+  </div>
+
+  <div class="disclaimer">
+    <b>Données illustratives, deux mécaniques différentes.</b> Les données de quartier ci-dessous (transport, écoles, commerces) sont des exemples — pas une vraie base de données de quartier. Ce qui est réel : <b>le résumé</b> est écrit par l'IA à partir uniquement de ces données fournies (jamais d'invention). Le <b>calculateur de trajet</b> plus bas n'est <i>pas</i> de l'IA — c'est une simple table de temps approximatifs, comme un tableau Excel.
+  </div>
+
+  <div class="picker-row">
+    <select id="arrSelect" onchange="onArrChange()"></select>
+    <button onclick="generateSummary()">Générer le résumé du quartier</button>
+  </div>
+
+  <div id="rawDataPreview"></div>
+
+  <div class="section-label ai">Résumé du quartier — IA</div>
+  <div id="summaryArea"><div class="loading-text">Choisissez un arrondissement et cliquez sur "Générer".</div></div>
+
+  <div class="section-label rule">Calculateur de trajet — règles, pas IA</div>
+  <div class="commute-card">
+    <div class="commute-row">
+      <span style="font-size:13px;color:#555;align-self:center;">Vers :</span>
+      <select id="destSelect" onchange="renderCommute()">
+        <option value="chatelet">Châtelet (centre)</option>
+        <option value="ladefense">La Défense</option>
+        <option value="gare_nord">Gare du Nord</option>
+      </select>
+    </div>
+    <div class="commute-results" id="commuteResults"></div>
+    <div class="commute-note">Temps approximatifs et illustratifs (table fixe) — pas un calcul d'itinéraire en temps réel.</div>
+  </div>
+</main>
+
+<script>
+// ---------------------------------------------------------------------------
+// Illustrative neighborhood data. Not a real database — standing in for one.
+// The AI route only ever sees this object for the selected arrondissement;
+// it cannot describe anything not represented here.
+// ---------------------------------------------------------------------------
+const NEIGHBORHOODS = {
+  "Paris 11e": {
+    transport: "Métro lignes 5, 9, 3 ; Vélib' dense ; Bastille à 10 min à pied",
+    schools: "2 écoles primaires publiques, 1 collège à proximité",
+    commerces: "Marché Bastille (jeudi/dimanche), nombreux bars et restaurants rue de la Roquette",
+    character: "Quartier vivant, jeune, animé le soir, plutôt bruyant rue principale, plus calme dans les rues adjacentes"
+  },
+  "Paris 15e": {
+    transport: "Métro lignes 6, 8, 10, 12 ; RER C à Javel ; Tramway T3a",
+    schools: "Plusieurs écoles publiques et privées, bonne réputation académique",
+    commerces: "Centre commercial Beaugrenelle, marchés rue du Commerce et rue Saint-Charles",
+    character: "Quartier résidentiel familial, calme, très demandé par les familles avec enfants"
+  },
+  "Paris 16e": {
+    transport: "Métro lignes 9, 10, 6 ; proche Bois de Boulogne",
+    schools: "Écoles privées réputées, lycées recherchés",
+    commerces: "Commerces haut de gamme avenue Mozart et rue de Passy",
+    character: "Quartier huppé, très calme, peu d'animation nocturne, valeurs immobilières élevées"
+  },
+  "Paris 17e": {
+    transport: "Métro lignes 2, 3, 13 ; gare Pont Cardinet (Transilien)",
+    schools: "Plusieurs écoles publiques, collèges bien notés secteur Ternes",
+    commerces: "Marché des Batignolles, commerces de proximité rue de Lévis",
+    character: "Mélange de quartiers résidentiels calmes (Ternes) et plus populaires (Batignolles), bonne desserte"
+  },
+  "Paris 20e": {
+    transport: "Métro lignes 2, 3, 9 ; bus fréquents",
+    schools: "Écoles publiques nombreuses, mixité sociale marquée",
+    commerces: "Marché de Belleville, commerces variés et abordables",
+    character: "Quartier populaire et multiculturel, en pleine évolution, prix encore accessibles"
+  }
+};
+
+function populateSelect() {
+  const sel = document.getElementById('arrSelect');
+  Object.keys(NEIGHBORHOODS).forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    sel.appendChild(opt);
+  });
+  onArrChange();
+}
+
+function onArrChange() {
+  const name = document.getElementById('arrSelect').value;
+  const data = NEIGHBORHOODS[name];
+  document.getElementById('rawDataPreview').innerHTML =
+    '<div class="raw-data-card">' +
+      '<b>Données fournies à l\'IA (illustratives) :</b><br>' +
+      '🚇 ' + data.transport + '<br>' +
+      '🏫 ' + data.schools + '<br>' +
+      '🛒 ' + data.commerces + '<br>' +
+      '🏘️ ' + data.character +
+    '</div>';
+  document.getElementById('summaryArea').innerHTML = '<div class="loading-text">Choisissez un arrondissement et cliquez sur "Générer".</div>';
+  renderCommute();
+}
+
+async function generateSummary() {
+  const name = document.getElementById('arrSelect').value;
+  const data = NEIGHBORHOODS[name];
+  const summaryArea = document.getElementById('summaryArea');
+  summaryArea.innerHTML = '<div class="loading-text">Génération en cours...</div>';
+
+  try {
+    const res = await fetch('/api/neighborhood-expert', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ area: name, rawData: data })
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || ('Erreur serveur (' + res.status + ')'));
+    }
+    const result = await res.json();
+    summaryArea.innerHTML =
+      '<div class="ai-card">' +
+        '<div class="summary">' + (result.summary || '') + '</div>' +
+        '<div class="sub-block"><div class="sub-label">Transport</div><div class="sub-text">' + (result.transport || '') + '</div></div>' +
+        '<div class="sub-block"><div class="sub-label">Points d\'attention</div><div class="sub-text">' + (result.pointsAttention || '') + '</div></div>' +
+      '</div>';
+  } catch (e) {
+    summaryArea.innerHTML = '<div class="error-text">Erreur : ' + e.message + '</div>';
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Commute "calculator" — NOT AI. A fixed illustrative lookup table of rough
+// minutes by mode from each arrondissement to a reference destination. A
+// real version would call a routing API (Citymapper/Google Directions); this
+// is a static stand-in, deliberately kept separate from the AI summary above
+// so the two mechanisms are never confused in the UI.
+// ---------------------------------------------------------------------------
+const COMMUTE_TABLE = {
+  "Paris 11e":  { chatelet: { metro: 12, velo: 15, voiture: 18 }, ladefense: { metro: 35, velo: 45, voiture: 30 }, gare_nord: { metro: 18, velo: 22, voiture: 20 } },
+  "Paris 15e":  { chatelet: { metro: 18, velo: 25, voiture: 20 }, ladefense: { metro: 25, velo: 35, voiture: 22 }, gare_nord: { metro: 28, velo: 35, voiture: 25 } },
+  "Paris 16e":  { chatelet: { metro: 20, velo: 28, voiture: 22 }, ladefense: { metro: 18, velo: 25, voiture: 18 }, gare_nord: { metro: 25, velo: 32, voiture: 22 } },
+  "Paris 17e":  { chatelet: { metro: 16, velo: 22, voiture: 18 }, ladefense: { metro: 20, velo: 28, voiture: 20 }, gare_nord: { metro: 15, velo: 18, voiture: 16 } },
+  "Paris 20e":  { chatelet: { metro: 15, velo: 20, voiture: 22 }, ladefense: { metro: 38, velo: 48, voiture: 32 }, gare_nord: { metro: 20, velo: 25, voiture: 22 } }
+};
+
+const MODE_ICON = { metro: '🚇', velo: '🚲', voiture: '🚗' };
+const MODE_LABEL = { metro: 'Métro', velo: 'Vélo', voiture: 'Voiture' };
+
+function renderCommute() {
+  const arr = document.getElementById('arrSelect').value;
+  const dest = document.getElementById('destSelect').value;
+  const times = COMMUTE_TABLE[arr][dest];
+  const results = document.getElementById('commuteResults');
+  results.innerHTML = Object.keys(times).map(mode =>
+    '<div class="commute-pill"><span class="mode">' + MODE_ICON[mode] + '</span><span class="mins">' + times[mode] + ' min</span><span>' + MODE_LABEL[mode] + '</span></div>'
+  ).join('');
+}
+
+populateSelect();
+</script>
+</body>
+</html>

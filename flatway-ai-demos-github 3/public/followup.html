@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Flatway — Relance automatique</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #f5f5f5; color: #1a1a1a; }
+
+  .nav { background: #1a1a2e; padding: 0 40px; display: flex; align-items: center; height: 60px; gap: 32px; position: sticky; top: 0; z-index: 100; }
+  .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .nav-logo img { width: 28px; height: 28px; border-radius: 6px; }
+  .nav-logo span { font-size: 18px; font-weight: 600; color: #fff; letter-spacing: -0.3px; }
+  .nav-links { display: flex; gap: 24px; margin-left: 8px; }
+  .nav-links a { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 14px; }
+  .nav-links a:hover, .nav-links a.active { color: #fff; }
+  .nav-right { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+  .nav-pro { font-size: 13px; color: rgba(255,255,255,0.6); text-decoration: none; }
+  .nav-login { font-size: 13px; color: #fff; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 6px 14px; text-decoration: none; }
+
+  .main { max-width: 1080px; margin: 0 auto; padding: 32px 28px 60px; }
+  .page-head h1 { font-size: 24px; font-weight: 600; margin-bottom: 6px; }
+  .page-head p { font-size: 14px; color: #777; line-height: 1.5; max-width: 760px; }
+
+  .disclaimer {
+    background: #fef0f0; border: 1px solid #f0c0c0; border-radius: 8px;
+    padding: 12px 16px; font-size: 13px; color: #8B1A1A; margin: 18px 0 24px; line-height: 1.5;
+  }
+  .disclaimer b { font-weight: 600; }
+
+  .section-label { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.06em; margin: 24px 0 10px; }
+  .section-label.rule { color: #555; }
+  .section-label.rule::before { content: '⚙ '; }
+  .section-label.ai::before { content: '✦ '; }
+
+  .case-list { display: flex; flex-direction: column; gap: 12px; }
+  .case-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; padding: 16px 18px; display: flex; align-items: center; gap: 16px; }
+  .case-info { flex: 1; }
+  .case-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .case-meta { font-size: 12px; color: #777; display: flex; gap: 10px; flex-wrap: wrap; }
+  .case-tag {
+    font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 10px; white-space: nowrap;
+  }
+  .case-tag.price_drop { background: #e8f5e9; color: #2e7d32; }
+  .case-tag.similar_available { background: #e3f2fd; color: #1565c0; }
+  .case-tag.just_checking { background: #f5f5f5; color: #777; }
+  .gen-btn {
+    background: #8B1A1A; color: #fff; border: none; border-radius: 8px;
+    padding: 9px 16px; font-size: 13px; font-weight: 500; font-family: 'Inter', sans-serif;
+    cursor: pointer; white-space: nowrap;
+  }
+  .gen-btn:hover { opacity: 0.9; }
+  .gen-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+  .draft-card {
+    background: #fff; border: 1.5px solid #8B1A1A; border-radius: 10px; padding: 18px 20px; margin-top: 10px;
+  }
+  .draft-label { font-size: 11px; font-weight: 600; color: #8B1A1A; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+  .draft-subject { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .draft-body { font-size: 13px; line-height: 1.6; color: #333; white-space: pre-wrap; }
+  .draft-note { font-size: 12px; color: #999; margin-top: 12px; border-top: 1px solid #f0f0f0; padding-top: 10px; }
+
+  .loading-text { font-size: 13px; color: #999; font-style: italic; margin-top: 10px; }
+  .error-text { font-size: 13px; color: #c0392b; margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="index.html">
+    <img src="https://flatway.fr/_next/static/media/appIcon.4beb43c9.webp" alt="Flatway"/>
+    <span>Flatway</span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Acheter</a>
+    <a href="fee-transparency.html">Vendre</a>
+    <a href="#" class="active">Relance — idée nouvelle</a>
+  </div>
+  <div class="nav-right">
+    <a href="#" class="nav-pro">Vous êtes professionnel ?</a>
+    <a href="#" class="nav-login">Se connecter</a>
+  </div>
+</nav>
+
+<main class="main">
+  <div class="page-head">
+    <h1>Relancer un acheteur au bon moment, sans y penser</h1>
+    <p>Un acheteur consulte un bien puis disparaît. Plutôt que de ne rien faire (ou d'envoyer une relance générique), le système repère pourquoi ça vaut le coup de le recontacter — baisse de prix, nouveau bien similaire, ou simple silence prolongé — et l'IA rédige un message adapté à cette raison précise.</p>
+  </div>
+
+  <div class="disclaimer">
+    <b>Ce qui est règle, ce qui est IA.</b> Décider <i>qui</i> relancer et <i>pourquoi</i> (baisse de prix détectée, nouveau bien similaire, ou juste un silence de plusieurs jours) est une logique simple, déterministe — pas de l'IA. La seule chose que l'IA fait : rédiger le texte du message dans un ton adapté à cette raison, à partir des chiffres exacts fournis (jamais inventés). Aucun message n'est envoyé automatiquement — chaque brouillon est généré pour relecture humaine avant envoi.
+  </div>
+
+  <div class="section-label rule">Étape 1 — déclencheurs détectés (règles, pas IA)</div>
+  <div class="case-list" id="caseList"></div>
+
+  <div id="draftArea"></div>
+</main>
+
+<script>
+// ---------------------------------------------------------------------------
+// Simulated buyer view history. In a real system this would come from
+// product analytics (listing views + timestamps) and the live listings feed
+// (to detect a real price change or a newly published similar listing).
+// The TRIGGER logic below — which reason applies to which case — is plain
+// rule-based code. The AI is never asked "should we follow up?" — it only
+// gets handed an already-decided reason and writes the message for it.
+// ---------------------------------------------------------------------------
+const CASES = [
+  {
+    buyerName: "Camille",
+    listing: { title: "Bel appartement lumineux de 93 m² à Ternes", price: 1095000, city: "Paris 17ème", rooms: 5, area: 93 },
+    daysSinceView: 9,
+    priceDropAmount: 25000,   // bien a baissé de 25 000€ depuis la visite
+    similarCount: 0
+  },
+  {
+    buyerName: "Antoine",
+    listing: { title: "2 pièces au pied du Métro Ségur", price: 499200, city: "Paris 15ème", rooms: 2, area: 41 },
+    daysSinceView: 5,
+    priceDropAmount: 0,
+    similarCount: 3   // 3 biens similaires publiés depuis sa visite
+  },
+  {
+    buyerName: "Sophie",
+    listing: { title: "Molitor — 3 pièces Paris 16e, calme et lumineux", price: 790000, city: "Paris 16ème", rooms: 3, area: 63 },
+    daysSinceView: 14,
+    priceDropAmount: 0,
+    similarCount: 0   // rien de spécial — juste un silence prolongé
+  }
+];
+
+// Pure rule-based trigger: given the signals, decide the ONE reason.
+// Priority: price drop > similar listings available > plain check-in.
+function decideReason(c) {
+  if (c.priceDropAmount > 0) return 'price_drop';
+  if (c.similarCount > 0) return 'similar_available';
+  return 'just_checking';
+}
+
+const REASON_LABEL = {
+  price_drop: 'Baisse de prix',
+  similar_available: 'Biens similaires dispo',
+  just_checking: 'Silence prolongé'
+};
+
+function renderCases() {
+  const list = document.getElementById('caseList');
+  list.innerHTML = '';
+  CASES.forEach((c, i) => {
+    const reason = decideReason(c);
+    let detail = '';
+    if (reason === 'price_drop') detail = '−' + c.priceDropAmount.toLocaleString('fr-FR') + ' € depuis la visite';
+    else if (reason === 'similar_available') detail = c.similarCount + ' bien' + (c.similarCount > 1 ? 's' : '') + ' similaire' + (c.similarCount > 1 ? 's' : '') + ' publié(s)';
+    else detail = 'vu il y a ' + c.daysSinceView + ' jours, aucune nouvelle';
+
+    const card = document.createElement('div');
+    card.className = 'case-card';
+    card.innerHTML =
+      '<div class="case-info">' +
+        '<div class="case-title">' + c.buyerName + ' — ' + c.listing.title + '</div>' +
+        '<div class="case-meta">' +
+          '<span>📅 vu il y a ' + c.daysSinceView + ' j</span>' +
+          '<span>' + Number(c.listing.price).toLocaleString('fr-FR') + ' €</span>' +
+          '<span>' + detail + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<span class="case-tag ' + reason + '">' + REASON_LABEL[reason] + '</span>' +
+      '<button class="gen-btn" onclick="generateDraft(' + i + ')">Générer le message</button>';
+    list.appendChild(card);
+  });
+}
+
+async function generateDraft(i) {
+  const c = CASES[i];
+  const reason = decideReason(c);
+  const draftArea = document.getElementById('draftArea');
+  draftArea.innerHTML =
+    '<div class="section-label ai">Étape 2 — message rédigé par l\'IA (' + REASON_LABEL[reason] + ')</div>' +
+    '<div class="loading-text">Rédaction en cours...</div>';
+
+  try {
+    const res = await fetch('/api/followup-message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        buyerName: c.buyerName,
+        listing: c.listing,
+        daysSinceView: c.daysSinceView,
+        reason: reason,
+        priceDropAmount: c.priceDropAmount,
+        similarCount: c.similarCount
+      })
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || ('Erreur serveur (' + res.status + ')'));
+    }
+    const data = await res.json();
+    draftArea.innerHTML =
+      '<div class="section-label ai">Étape 2 — message rédigé par l\'IA (' + REASON_LABEL[reason] + ')</div>' +
+      '<div class="draft-card">' +
+        '<div class="draft-label">✦ Brouillon — IA</div>' +
+        '<div class="draft-subject">' + (data.subject || '') + '</div>' +
+        '<div class="draft-body">' + (data.message || '') + '</div>' +
+        '<div class="draft-note">Brouillon généré pour relecture humaine — rien n\'est envoyé automatiquement.</div>' +
+      '</div>';
+  } catch (e) {
+    draftArea.innerHTML =
+      '<div class="section-label ai">Étape 2 — message rédigé par l\'IA</div>' +
+      '<div class="error-text">Erreur : ' + e.message + '</div>';
+  }
+}
+
+renderCases();
+</script>
+</body>
+</html>

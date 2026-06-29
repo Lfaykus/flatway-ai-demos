@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Flatway — Comparer des biens</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #f5f5f5; color: #1a1a1a; }
+
+  .nav { background: #1a1a2e; padding: 0 40px; display: flex; align-items: center; height: 60px; gap: 32px; position: sticky; top: 0; z-index: 100; }
+  .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .nav-logo img { width: 28px; height: 28px; border-radius: 6px; }
+  .nav-logo span { font-size: 18px; font-weight: 600; color: #fff; letter-spacing: -0.3px; }
+  .nav-links { display: flex; gap: 24px; margin-left: 8px; }
+  .nav-links a { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 14px; }
+  .nav-links a:hover, .nav-links a.active { color: #fff; }
+  .nav-right { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+  .nav-pro { font-size: 13px; color: rgba(255,255,255,0.6); text-decoration: none; }
+  .nav-login { font-size: 13px; color: #fff; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 6px 14px; text-decoration: none; }
+
+  .main { max-width: 1080px; margin: 0 auto; padding: 32px 28px 60px; }
+  .page-head h1 { font-size: 24px; font-weight: 600; margin-bottom: 6px; }
+  .page-head p { font-size: 14px; color: #777; line-height: 1.5; max-width: 760px; }
+
+  .disclaimer {
+    background: #fef0f0; border: 1px solid #f0c0c0; border-radius: 8px;
+    padding: 12px 16px; font-size: 13px; color: #8B1A1A; margin: 18px 0 24px; line-height: 1.5;
+  }
+  .disclaimer b { font-weight: 600; }
+
+  .picker-row { font-size: 13px; color: #555; margin-bottom: 10px; }
+  .picker-row b { color: #1a1a1a; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .pick-card {
+    background: #fff; border: 2px solid #e8e8e8; border-radius: 10px; padding: 14px;
+    cursor: pointer; transition: border-color 0.12s, box-shadow 0.12s; position: relative;
+  }
+  .pick-card:hover { border-color: #d4b8b8; }
+  .pick-card.selected { border-color: #8B1A1A; box-shadow: 0 2px 10px rgba(139,26,26,0.12); }
+  .pick-check {
+    position: absolute; top: 10px; right: 10px; width: 18px; height: 18px;
+    border: 1.5px solid #ccc; border-radius: 4px; background: #fff;
+  }
+  .pick-card.selected .pick-check { background: #8B1A1A; border-color: #8B1A1A; }
+  .pick-card.selected .pick-check::after { content: '✓'; color: #fff; font-size: 12px; display:block; text-align:center; line-height:18px; }
+  .pick-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; padding-right: 22px; line-height: 1.3; }
+  .pick-meta { font-size: 12px; color: #777; display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+  .pick-price { font-size: 16px; font-weight: 600; color: #8B1A1A; }
+  .pick-permsq { font-size: 11px; color: #999; }
+
+  .compare-btn {
+    background: #8B1A1A; color: #fff; border: none; border-radius: 8px;
+    padding: 11px 22px; font-size: 14px; font-weight: 500; font-family: 'Inter', sans-serif;
+    cursor: pointer; margin-bottom: 24px;
+  }
+  .compare-btn:disabled { background: #ccc; cursor: not-allowed; }
+  .compare-btn:hover:not(:disabled) { opacity: 0.9; }
+
+  .result-card { background: #fff; border: 1.5px solid #8B1A1A; border-radius: 10px; padding: 20px 22px; margin-bottom: 20px; }
+  .result-label { font-size: 11px; font-weight: 600; color: #8B1A1A; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+  .verdict { font-size: 15px; line-height: 1.5; margin-bottom: 14px; color: #1a1a1a; }
+  .points { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .points li { font-size: 13px; color: #444; line-height: 1.5; padding-left: 18px; position: relative; }
+  .points li::before { content: '→'; position: absolute; left: 0; color: #8B1A1A; }
+  .points li b { color: #1a1a1a; }
+
+  .loading-text { font-size: 13px; color: #999; font-style: italic; }
+  .error-text { font-size: 13px; color: #c0392b; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="index.html">
+    <img src="https://flatway.fr/_next/static/media/appIcon.4beb43c9.webp" alt="Flatway"/>
+    <span>Flatway</span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Acheter</a>
+    <a href="fee-transparency.html">Vendre</a>
+    <a href="#" class="active">Comparer — idée nouvelle</a>
+  </div>
+  <div class="nav-right">
+    <a href="#" class="nav-pro">Vous êtes professionnel ?</a>
+    <a href="#" class="nav-login">Se connecter</a>
+  </div>
+</nav>
+
+<main class="main">
+  <div class="page-head">
+    <h1>Comparez 2 ou 3 biens en un coup d'œil</h1>
+    <p>Au lieu d'ouvrir plusieurs onglets et de relire chaque fiche, sélectionnez les biens qui vous intéressent — l'IA résume les vrais écarts (prix/m², surface, caractéristiques) en phrases claires.</p>
+  </div>
+
+  <div class="disclaimer">
+    <b>Mécanique réelle, données réelles d'annonces.</b> Les biens ci-dessous viennent du même jeu de données que la recherche intelligente (annonces réelles syndiquées via Apimo). Ce qui est nouveau ici : l'IA écrit la comparaison en langage clair à partir des chiffres réels de chaque bien — elle ne reçoit et n'invente aucune caractéristique qui n'est pas listée ci-dessous.
+  </div>
+
+  <div class="picker-row">Sélectionnez <b>2 ou 3 biens</b> à comparer :</div>
+  <div class="grid" id="grid"></div>
+
+  <button class="compare-btn" id="compareBtn" onclick="doCompare()" disabled>Comparer (0 sélectionné)</button>
+
+  <div id="resultArea"></div>
+</main>
+
+<script>
+// Same real listing dataset (Apimo-syndicated, real Flatway-style listings)
+// used by the smart search demo, kept in sync manually since each demo page
+// here is self-contained — a real integration would read from one shared
+// source instead of two copies.
+const LISTINGS = [
+  {id:"d96fd35c",city:"Paris 17ème",rooms:5,area:93,title:"Bel appartement lumineux de 93 m² à Ternes",price:1095000,features:["lumineux"]},
+  {id:"cf2b167e",city:"Paris 16ème",rooms:1,area:17.23,title:"Studio 17,23 M² - 6ème étage — Paris 16e",price:185000,features:["studio"]},
+  {id:"b6526d58",city:"Paris 15ème",rooms:5,area:103,title:"Appartement familial avec balcon, jardin et parking",price:1235000,features:["balcon","parking","jardin"]},
+  {id:"b2786fff",city:"Paris 17ème",rooms:2,area:26.03,title:"Pont Cardinet - 2 pièces de 26m² - rdc, rue calme",price:252000,features:["calme"]},
+  {id:"855ba646",city:"Paris 15ème",rooms:2,area:41,title:"2 pièces au pied du Métro Ségur",price:499200,features:[]},
+  {id:"3e542df2",city:"Paris 16ème",rooms:3,area:63,title:"Molitor — 3 pièces Paris 16e, calme et lumineux",price:790000,features:["calme","lumineux"]},
+  {id:"f8a9d95c",city:"Paris 16ème",rooms:1,area:17.5,title:"Studio meublé clé en main — Paris 16e, Rue de Passy",price:210000,features:["meublé","studio"]},
+  {id:"be3c0266",city:"Paris 20ème",rooms:2,area:54.51,title:"Paris 20e — Charonne | T2 lumineux avec balcon",price:420000,features:["balcon","lumineux"]},
+  {id:"aa101001",city:"Paris 15ème",rooms:3,area:63.98,title:"Paris 15ème — Charles Michels | Appartement 3 pièces lumineux",price:649000,features:["lumineux"]},
+  {id:"aa101002",city:"Paris 15ème",rooms:3,area:69.14,title:"Paris 15ème — Sèvres-Lecourbe | Appartement 3 pièces lumineux",price:775000,features:["lumineux"]},
+  {id:"aa101005",city:"Paris 15ème",rooms:2,area:45.65,title:"Paris 15ème — 2 pièces lumineux 10ème étage vue panoramique",price:399000,features:["lumineux","balcon","vue"]},
+  {id:"aa101006",city:"Paris 15ème",rooms:5,area:80,title:"Paris 15ème — 5 pièces familial avec parking, cave et jardin",price:670000,features:["parking","cave","familial","jardin"]}
+];
+
+let selected = new Set();
+
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  LISTINGS.forEach(l => {
+    const card = document.createElement('div');
+    card.className = 'pick-card' + (selected.has(l.id) ? ' selected' : '');
+    card.onclick = () => toggleSelect(l.id);
+    const perSq = Math.round(l.price / l.area);
+    card.innerHTML =
+      '<div class="pick-check"></div>' +
+      '<div class="pick-title">' + l.title + '</div>' +
+      '<div class="pick-meta"><span>📐 ' + l.area + ' m²</span><span>🚪 ' + l.rooms + ' p.</span><span>📍 ' + l.city + '</span></div>' +
+      '<div class="pick-price">' + Number(l.price).toLocaleString('fr-FR') + ' €</div>' +
+      '<div class="pick-permsq">' + perSq.toLocaleString('fr-FR') + ' €/m²</div>';
+    grid.appendChild(card);
+  });
+}
+
+function toggleSelect(id) {
+  if (selected.has(id)) {
+    selected.delete(id);
+  } else {
+    if (selected.size >= 3) {
+      alert('Maximum 3 biens à la fois pour cette comparaison.');
+      return;
+    }
+    selected.add(id);
+  }
+  renderGrid();
+  updateButton();
+}
+
+function updateButton() {
+  const btn = document.getElementById('compareBtn');
+  btn.textContent = 'Comparer (' + selected.size + ' sélectionné' + (selected.size > 1 ? 's' : '') + ')';
+  btn.disabled = selected.size < 2;
+}
+
+async function doCompare() {
+  const resultArea = document.getElementById('resultArea');
+  resultArea.innerHTML = '<div class="loading-text">Comparaison en cours...</div>';
+
+  const chosen = LISTINGS.filter(l => selected.has(l.id));
+
+  try {
+    const res = await fetch('/api/compare-listings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ listings: chosen })
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || ('Erreur serveur (' + res.status + ')'));
+    }
+    const data = await res.json();
+    renderResult(data, chosen);
+  } catch (e) {
+    resultArea.innerHTML = '<div class="error-text">Erreur : ' + e.message + '</div>';
+  }
+}
+
+function renderResult(data, chosen) {
+  const resultArea = document.getElementById('resultArea');
+  const findTitle = (id) => {
+    const l = chosen.find(c => c.id === id);
+    return l ? l.title : null;
+  };
+  const pointsHTML = (data.points || []).map(p => {
+    const t = findTitle(p.listingId);
+    return '<li>' + p.label + (t ? ' — <b>' + t + '</b>' : '') + '</li>';
+  }).join('');
+
+  resultArea.innerHTML =
+    '<div class="result-card">' +
+      '<div class="result-label">⚖️ Comparaison — IA</div>' +
+      '<div class="verdict">' + (data.verdict || '') + '</div>' +
+      '<ul class="points">' + pointsHTML + '</ul>' +
+    '</div>';
+}
+
+renderGrid();
+updateButton();
+</script>
+</body>
+</html>
