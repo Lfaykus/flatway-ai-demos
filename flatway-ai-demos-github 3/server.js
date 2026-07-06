@@ -623,6 +623,99 @@ app.post('/api/compare-listings', async (req, res) => {
   }
 });
 
+// Social media content generator — produces structured post content (carousel,
+// reel script, problem/reframe, single post) in French in Flatway's brand voice.
+// The AI writes the actual content; a human copies it into Canva and posts.
+const SOCIAL_CONTENT_SYSTEM_PROMPT = `Tu es un expert en marketing immobilier pour Flatway.fr, une plateforme immobilière française qui gère tout le processus A-Z pour vendeurs et acheteurs (sans frais d'agence fixes, commission uniquement à la vente).
+
+Style de Flatway : éducatif, direct, honnête, expert mais accessible. Jamais promotionnel ou vendeur. Toujours utile en premier.
+
+Génère UNIQUEMENT du JSON valide selon le type demandé.
+
+CAROUSEL → {"type":"carousel","topic":"...","slides":[{"n":1,"heading":"...","body":"..."},{"n":2,"heading":"...","body":"..."},...],"caption":"...","hashtags":["#immobilier","..."]}
+— Slide 1 : accroche forte (question ou chiffre choc)
+— Slides 2-5 : un point clair par slide, heading court + corps 1-2 phrases
+— Slide finale : récap + CTA naturel vers Flatway.fr
+
+REFRAME → {"type":"reframe","topic":"...","hook":"...","misconception":"...","reality":"...","flatway_angle":"...","caption":"...","hashtags":[...]}
+— hook : première phrase qui arrête le scroll
+— misconception : ce que les gens pensent à tort
+— reality : la vérité concrète avec chiffres si possible
+— flatway_angle : pourquoi Flatway règle ce problème (sans forcer)
+
+REEL → {"type":"reel","topic":"...","hook":"...","beats":["...","...","..."],"cta":"...","caption":"...","hashtags":[...]}
+— hook : phrase d'accroche pour les 2 premières secondes
+— beats : 3-4 points courts à dire à voix haute (15-30 sec total)
+— cta : dernière phrase naturelle
+
+SINGLE → {"type":"single","topic":"...","headline":"...","body":"...","cta":"...","caption":"...","hashtags":[...]}
+— headline : titre court et fort
+— body : 2-3 phrases max, fait concret ou conseil actionnable
+— cta : appel à l'action simple
+
+Règles strictes :
+- Toujours en français
+- Contenu éducatif, jamais publicitaire
+- Chiffres réels quand pertinents
+- 5-8 hashtags : mélange générique (#immobilier #paris) et niche (#achatimmobilier #conseilimmobilier)
+- Ne jamais inventer de statistiques — si un chiffre est approximatif, le marquer "environ"`;
+
+app.post('/api/social-content', async (req, res) => {
+  const { type, topic } = req.body;
+  if (!type || !topic) return res.status(400).json({ error: 'type and topic required' });
+  if (!process.env.ANTHROPIC_API_KEY) return res.status(500).json({ error: 'API key not configured' });
+
+  const typeLabels = { carousel: 'CAROUSEL', reframe: 'REFRAME', reel: 'REEL', single: 'SINGLE' };
+  const label = typeLabels[type] || type.toUpperCase();
+
+  try {
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1200,
+      system: SOCIAL_CONTENT_SYSTEM_PROMPT,
+      messages: [{
+        role: 'user',
+        content: `Crée un post de type ${label} sur le sujet suivant : "${topic}". Réponds uniquement en JSON valide.`
+      }]
+    });
+    const raw = response.content[0].text;
+    const parsed = parseModelJSON(raw);
+    if (!parsed) return res.status(500).json({ error: 'Failed to parse AI response', raw });
+    return res.json(parsed);
+  } catch (e) {
+    console.error('Unexpected error calling Anthropic (social-content):', e);
+    return res.status(e.status || 500).json({ error: e.message });
+  }
+});
+
+// Post-visit feedback analyser — buyer speaks freely after a property visit,
+// AI transcribes and extracts structured feedback for the seller and agency.
+const VISIT_FEEDBACK_SYSTEM_PROMPT = `Tu analyses le retour verbal d'un acheteur après une visite de bien immobilier pour Flatway.fr.
+Réponds UNIQUEMENT en JSON valide :
+{
+  "sentiment": "positif" | "neutre" | "négatif",
+  "liked": ["point positif 1", "point positif 2"],
+  "didntLike": ["point négatif 1", "point négatif 2"],
+  "dealbreakers": ["point bloquant 1"],
+  "priceFeedback": "courte phrase sur l'avis prix, ou null si non mentionné",
+  "agentSummary": "1-2 phrases résumant ce que le vendeur/agent doit retenir de ce retour"
+}
+Règle stricte : base-toi UNIQUEMENT sur ce que l'acheteur a dit. N'invente rien. Si un champ n'est pas mentionné, retourne un tableau vide ou null.`;
+
+app.post('/api/visit-feedback', async (req, res) => {
+  const { transcript } = req.body || {};
+  if (!transcript || !transcript.trim()) {
+    return res.status(400).json({ error: 'No transcript provided.' });
+  }
+  try {
+    const result = await callAnthropic(VISIT_FEEDBACK_SYSTEM_PROMPT, transcript, 400);
+    return res.json(result);
+  } catch (e) {
+    console.error('Unexpected error calling Anthropic (visit-feedback):', e);
+    return res.status(e.status || 500).json({ error: e.message });
+  }
+});
+
 // Basic health check — useful for confirming the server is up before debugging anything else.
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, keyConfigured: !!process.env.ANTHROPIC_API_KEY });

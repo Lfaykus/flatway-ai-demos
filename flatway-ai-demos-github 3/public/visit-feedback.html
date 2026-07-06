@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Flatway — Retour de visite</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #f5f5f5; color: #1a1a1a; }
+
+  .nav { background: #1a1a2e; padding: 0 40px; display: flex; align-items: center; height: 60px; gap: 32px; position: sticky; top: 0; z-index: 100; }
+  .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .nav-logo img { width: 28px; height: 28px; border-radius: 6px; }
+  .nav-logo span { font-size: 18px; font-weight: 600; color: #fff; letter-spacing: -0.3px; }
+  .nav-links a { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 14px; }
+  .nav-right { margin-left: auto; }
+  .nav-login { font-size: 13px; color: #fff; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 6px 14px; text-decoration: none; }
+
+  .main { max-width: 720px; margin: 0 auto; padding: 32px 24px 60px; }
+
+  .listing-pill { background: #fff; border: 1px solid #e0e0e8; border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+  .listing-pill .icon { font-size: 20px; }
+  .listing-pill .info { flex: 1; }
+  .listing-pill .name { font-size: 14px; font-weight: 600; }
+  .listing-pill .meta { font-size: 12px; color: #888; margin-top: 2px; }
+  .listing-pill .price { font-size: 15px; font-weight: 700; color: #8B1A1A; }
+
+  .page-head { margin-bottom: 20px; }
+  .page-head h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+  .page-head p { font-size: 13px; color: #777; line-height: 1.5; }
+
+  .card { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; padding: 20px 22px; margin-bottom: 16px; }
+
+  .mic-area { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 12px 0; }
+  .mic-btn {
+    width: 72px; height: 72px; border-radius: 50%; border: none; cursor: pointer;
+    background: #1a1a2e; display: flex; align-items: center; justify-content: center;
+    font-size: 28px; transition: all 0.2s; box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  }
+  .mic-btn.listening { background: #8B1A1A; animation: pulse 1.2s infinite; }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(139,26,26,0.4); } 50% { box-shadow: 0 0 0 12px rgba(139,26,26,0); } }
+  .mic-label { font-size: 13px; color: #777; text-align: center; }
+  .mic-label.active { color: #8B1A1A; font-weight: 500; }
+
+  .divider { display: flex; align-items: center; gap: 10px; margin: 14px 0; color: #bbb; font-size: 12px; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #e8e8e8; }
+
+  textarea {
+    width: 100%; border: 1px solid #e0e0e0; border-radius: 7px; padding: 10px 12px;
+    font-size: 13px; font-family: 'Inter', sans-serif; color: #1a1a1a; outline: none;
+    background: #fafafa; resize: vertical; min-height: 100px; line-height: 1.5;
+  }
+  textarea:focus { border-color: #8B1A1A; background: #fff; }
+
+  .btn-primary {
+    width: 100%; margin-top: 14px; background: #8B1A1A; color: #fff; border: none;
+    border-radius: 7px; padding: 12px; font-size: 14px; font-weight: 500;
+    font-family: 'Inter', sans-serif; cursor: pointer;
+  }
+  .btn-primary:hover:not(:disabled) { opacity: 0.9; }
+  .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+
+  .loading { text-align: center; font-size: 13px; color: #999; font-style: italic; padding: 20px 0; }
+  .error { font-size: 13px; color: #c0392b; padding: 10px 0; }
+
+  .result-section { margin-bottom: 18px; }
+  .result-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #888; margin-bottom: 8px; }
+
+  .sentiment-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+  .sentiment-positif { background: #e8f5e9; color: #2e7d32; }
+  .sentiment-neutre { background: #fff8e1; color: #f57f17; }
+  .sentiment-négatif { background: #fdecea; color: #c62828; }
+
+  .tag-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag { font-size: 12px; padding: 5px 10px; border-radius: 6px; line-height: 1.4; }
+  .tag-good { background: #e8f5e9; color: #2e7d32; }
+  .tag-bad { background: #fdecea; color: #c62828; }
+  .tag-block { background: #fff3e0; color: #bf5500; font-weight: 600; }
+
+  .summary-box { background: #1a1a2e; color: #fff; border-radius: 8px; padding: 14px 16px; font-size: 13px; line-height: 1.6; }
+  .summary-box .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(255,255,255,0.4); margin-bottom: 6px; }
+
+  .empty-tag { font-size: 12px; color: #bbb; font-style: italic; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="index.html">
+    <img src="https://flatway.fr/_next/static/media/appIcon.4beb43c9.webp" alt="Flatway"/>
+    <span>Flatway</span>
+  </a>
+  <div class="nav-right"><a href="#" class="nav-login">Se connecter</a></div>
+</nav>
+
+<main class="main">
+  <div class="listing-pill">
+    <div class="icon">🏠</div>
+    <div class="info">
+      <div class="name">Appartement 3 pièces — Paris 15e, Charles Michels</div>
+      <div class="meta">63 m² · 3 pièces · Visite aujourd'hui</div>
+    </div>
+    <div class="price">649 000 €</div>
+  </div>
+
+  <div class="page-head">
+    <h1>Votre retour sur cette visite</h1>
+    <p>Parlez librement — qu'est-ce qui vous a plu, déplu, ou bloqué ? L'IA résume votre retour pour le vendeur et l'agent. Aucun filtre, aucune note publique.</p>
+  </div>
+
+  <div class="card">
+    <div class="mic-area">
+      <button class="mic-btn" id="micBtn" onclick="toggleMic()">🎤</button>
+      <div class="mic-label" id="micLabel">Appuyez pour parler</div>
+    </div>
+
+    <div class="divider">ou tapez directement</div>
+
+    <textarea id="transcript" placeholder="Ex : La luminosité était superbe, mais la cuisine est vraiment trop petite pour nous. Le bruit de la rue m'a gêné. Le prix me semble un peu élevé par rapport au quartier..."></textarea>
+
+    <button class="btn-primary" id="analyseBtn" onclick="analyseFeedback()">Analyser le retour</button>
+  </div>
+
+  <div id="resultArea"></div>
+</main>
+
+<script>
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+let isListening = false;
+
+if (SpeechRecognition) {
+  recognition = new SpeechRecognition();
+  recognition.lang = 'fr-FR';
+  recognition.continuous = true;
+  recognition.interimResults = true;
+
+  recognition.onresult = (event) => {
+    let final = '';
+    let interim = '';
+    for (let i = 0; i < event.results.length; i++) {
+      const text = event.results[i][0].transcript;
+      if (event.results[i].isFinal) final += text + ' ';
+      else interim += text;
+    }
+    document.getElementById('transcript').value = (final + interim).trim();
+  };
+
+  recognition.onend = () => {
+    isListening = false;
+    document.getElementById('micBtn').classList.remove('listening');
+    document.getElementById('micLabel').textContent = 'Appuyez pour parler';
+    document.getElementById('micLabel').classList.remove('active');
+  };
+}
+
+function toggleMic() {
+  if (!recognition) { alert('Votre navigateur ne supporte pas la reconnaissance vocale. Tapez votre retour directement.'); return; }
+  if (isListening) {
+    recognition.stop();
+  } else {
+    document.getElementById('transcript').value = '';
+    recognition.start();
+    isListening = true;
+    document.getElementById('micBtn').classList.add('listening');
+    document.getElementById('micLabel').textContent = 'Écoute en cours... appuyez à nouveau pour terminer';
+    document.getElementById('micLabel').classList.add('active');
+  }
+}
+
+async function analyseFeedback() {
+  const transcript = document.getElementById('transcript').value.trim();
+  if (!transcript) { alert('Veuillez d\'abord parler ou taper votre retour.'); return; }
+
+  const btn = document.getElementById('analyseBtn');
+  btn.disabled = true;
+  btn.textContent = 'Analyse en cours...';
+  document.getElementById('resultArea').innerHTML = '<div class="loading">L\'IA analyse votre retour...</div>';
+
+  try {
+    const res = await fetch('/api/visit-feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transcript })
+    });
+    if (!res.ok) throw new Error('Erreur serveur (' + res.status + ')');
+    const data = await res.json();
+    renderResult(data);
+  } catch (e) {
+    document.getElementById('resultArea').innerHTML = '<div class="error">Erreur : ' + e.message + '</div>';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Analyser le retour';
+  }
+}
+
+function renderResult(d) {
+  const sentimentClass = 'sentiment-' + (d.sentiment || 'neutre');
+  const tags = (arr, cls) => arr && arr.length
+    ? arr.map(t => `<span class="tag ${cls}">${t}</span>`).join('')
+    : '<span class="empty-tag">Rien de mentionné</span>';
+
+  document.getElementById('resultArea').innerHTML = `
+    <div class="card">
+      <div class="result-section">
+        <div class="result-label">Sentiment général</div>
+        <span class="sentiment-badge ${sentimentClass}">${d.sentiment || 'neutre'}</span>
+      </div>
+
+      <div class="result-section">
+        <div class="result-label">Ce qui a plu</div>
+        <div class="tag-list">${tags(d.liked, 'tag-good')}</div>
+      </div>
+
+      <div class="result-section">
+        <div class="result-label">Ce qui n'a pas plu</div>
+        <div class="tag-list">${tags(d.didntLike, 'tag-bad')}</div>
+      </div>
+
+      <div class="result-section">
+        <div class="result-label">Points bloquants</div>
+        <div class="tag-list">${tags(d.dealbreakers, 'tag-block')}</div>
+      </div>
+
+      ${d.priceFeedback ? `
+      <div class="result-section">
+        <div class="result-label">Avis sur le prix</div>
+        <div style="font-size:13px;color:#444;line-height:1.5;">${d.priceFeedback}</div>
+      </div>` : ''}
+
+      <div class="summary-box">
+        <div class="label">Résumé pour le vendeur / agent</div>
+        ${d.agentSummary || 'Aucun résumé généré.'}
+      </div>
+    </div>
+  `;
+}
+</script>
+</body>
+</html>
