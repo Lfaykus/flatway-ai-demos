@@ -446,11 +446,34 @@ Règles :
 - bloquants = problèmes qui empêcheraient vraiment l'achat (bruit insupportable, budget dépassé, taille rédhibitoire…) — distinct des simples dislikes
 - resume doit être professionnel, factuel, utile pour l'agent`;
 
+    // Embed format instructions in the feedback text itself so the backend
+    // follows them regardless of whatever system prompt it has hardcoded.
+    const feedbackWithInstructions = `Retour de visite immobilière à analyser :
+
+${text}
+
+---
+Analyse ce retour et réponds UNIQUEMENT en JSON valide (aucun texte avant ou après) avec exactement ce format :
+{
+  "score": <entier de 1 à 10 représentant la probabilité d'offre>,
+  "sentiment": <"Très intéressé" | "Intéressé mais hésitant" | "Peu convaincu" | "Pas intéressé">,
+  "positifs": [<liste de points positifs courts, en français>],
+  "negatifs": [<liste de points négatifs courts, en français>],
+  "bloquants": [<points qui pourraient vraiment faire rater la vente — [] si aucun>],
+  "avis_prix": "<phrase courte sur le ressenti prix, ou \\"Pas mentionné\\" si absent>",
+  "resume": "<2-3 phrases de résumé professionnel pour l'agent immobilier>"
+}
+
+Règles impératives :
+- score 8-10 = très intéressé, offre probable ; 5-7 = hésitant ; 1-4 = peu/pas intéressé
+- bloquants uniquement pour les vrais deal-breakers (budget dépassé, bruit rédhibitoire, taille insuffisante…)
+- JSON pur uniquement, aucun markdown`;
+
     try {
       const res = await fetch('/api/visit-feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ feedback: text, systemPrompt })
+        body: JSON.stringify({ feedback: feedbackWithInstructions, systemPrompt })
       });
       const data = await res.json();
       const raw = (data.result || data.content || '').trim()
