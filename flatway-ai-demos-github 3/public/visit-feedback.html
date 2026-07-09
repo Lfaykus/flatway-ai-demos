@@ -473,13 +473,11 @@ Règles impératives :
       const res = await fetch('/api/visit-feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ feedback: feedbackWithInstructions, systemPrompt })
+        body: JSON.stringify({ feedback: text })
       });
       const data = await res.json();
-      const raw = (data.result || data.content || '').trim()
-        .replace(/```json/g, '').replace(/```/g, '').trim();
-      const start = raw.indexOf('{'), end = raw.lastIndexOf('}') + 1;
-      lastResult = JSON.parse(raw.slice(start, end));
+      if (!res.ok || data.error) throw new Error(data.error || 'Request failed');
+      lastResult = data;
       renderResults(lastResult);
     } catch(e) {
       showError('Erreur lors de l\'analyse. Réessayez dans un instant.');
