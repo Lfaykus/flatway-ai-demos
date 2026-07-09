@@ -1,241 +1,564 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Flatway — Retour de visite</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Inter', sans-serif; background: #f5f5f5; color: #1a1a1a; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flatway — Retour de visite</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  .nav { background: #1a1a2e; padding: 0 40px; display: flex; align-items: center; height: 60px; gap: 32px; position: sticky; top: 0; z-index: 100; }
-  .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-  .nav-logo img { width: 28px; height: 28px; border-radius: 6px; }
-  .nav-logo span { font-size: 18px; font-weight: 600; color: #fff; letter-spacing: -0.3px; }
-  .nav-links a { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 14px; }
-  .nav-right { margin-left: auto; }
-  .nav-login { font-size: 13px; color: #fff; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 6px 14px; text-decoration: none; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f7f7f5;
+      color: #1a1a1a;
+      min-height: 100vh;
+    }
 
-  .main { max-width: 720px; margin: 0 auto; padding: 32px 24px 60px; }
+    nav {
+      background: #fff;
+      border-bottom: 1px solid #e8e8e4;
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo { font-size: 18px; font-weight: 700; color: #1a1a1a; text-decoration: none; }
+    .nav-logo span { color: #2563eb; }
 
-  .listing-pill { background: #fff; border: 1px solid #e0e0e8; border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
-  .listing-pill .icon { font-size: 20px; }
-  .listing-pill .info { flex: 1; }
-  .listing-pill .name { font-size: 14px; font-weight: 600; }
-  .listing-pill .meta { font-size: 12px; color: #888; margin-top: 2px; }
-  .listing-pill .price { font-size: 15px; font-weight: 700; color: #8B1A1A; }
+    main {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 32px 20px 80px;
+    }
 
-  .page-head { margin-bottom: 20px; }
-  .page-head h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
-  .page-head p { font-size: 13px; color: #777; line-height: 1.5; }
+    /* Property card */
+    .property-card {
+      background: #fff;
+      border: 1px solid #e8e8e4;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 28px;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+    .property-icon {
+      width: 48px;
+      height: 48px;
+      background: #eff6ff;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+    .property-info h2 { font-size: 15px; font-weight: 600; }
+    .property-meta { font-size: 13px; color: #666; margin-top: 2px; }
+    .property-price { font-size: 16px; font-weight: 700; color: #2563eb; margin-top: 4px; }
 
-  .card { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; padding: 20px 22px; margin-bottom: 16px; }
+    /* Input section */
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .section-sub {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
 
-  .mic-area { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 12px 0; }
-  .mic-btn {
-    width: 72px; height: 72px; border-radius: 50%; border: none; cursor: pointer;
-    background: #1a1a2e; display: flex; align-items: center; justify-content: center;
-    font-size: 28px; transition: all 0.2s; box-shadow: 0 2px 12px rgba(0,0,0,0.15);
-  }
-  .mic-btn.listening { background: #8B1A1A; animation: pulse 1.2s infinite; }
-  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(139,26,26,0.4); } 50% { box-shadow: 0 0 0 12px rgba(139,26,26,0); } }
-  .mic-label { font-size: 13px; color: #777; text-align: center; }
-  .mic-label.active { color: #8B1A1A; font-weight: 500; }
+    .input-area {
+      background: #fff;
+      border: 1px solid #e8e8e4;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
 
-  .divider { display: flex; align-items: center; gap: 10px; margin: 14px 0; color: #bbb; font-size: 12px; }
-  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #e8e8e8; }
+    .mic-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .mic-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: none;
+      background: #2563eb;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .mic-btn.listening { background: #dc2626; animation: pulse 1.2s infinite; }
+    @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.4); } 50% { box-shadow: 0 0 0 8px rgba(220,38,38,0); } }
+    .mic-label { font-size: 13px; color: #666; }
 
-  textarea {
-    width: 100%; border: 1px solid #e0e0e0; border-radius: 7px; padding: 10px 12px;
-    font-size: 13px; font-family: 'Inter', sans-serif; color: #1a1a1a; outline: none;
-    background: #fafafa; resize: vertical; min-height: 100px; line-height: 1.5;
-  }
-  textarea:focus { border-color: #8B1A1A; background: #fff; }
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      border: 1px solid #e8e8e4;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 14px;
+      font-family: inherit;
+      resize: vertical;
+      outline: none;
+      color: #1a1a1a;
+      background: #fafaf9;
+    }
+    textarea:focus { border-color: #2563eb; background: #fff; }
 
-  .btn-primary {
-    width: 100%; margin-top: 14px; background: #8B1A1A; color: #fff; border: none;
-    border-radius: 7px; padding: 12px; font-size: 14px; font-weight: 500;
-    font-family: 'Inter', sans-serif; cursor: pointer;
-  }
-  .btn-primary:hover:not(:disabled) { opacity: 0.9; }
-  .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+    .analyze-btn {
+      width: 100%;
+      padding: 14px;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .analyze-btn:hover { background: #1d4ed8; }
+    .analyze-btn:disabled { background: #93c5fd; cursor: not-allowed; }
 
-  .loading { text-align: center; font-size: 13px; color: #999; font-style: italic; padding: 20px 0; }
-  .error { font-size: 13px; color: #c0392b; padding: 10px 0; }
+    /* Results */
+    .results { margin-top: 28px; display: none; }
+    .results.visible { display: block; }
 
-  .result-section { margin-bottom: 18px; }
-  .result-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #888; margin-bottom: 8px; }
+    /* Score banner */
+    .score-banner {
+      background: #fff;
+      border: 1px solid #e8e8e4;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .score-circle {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-weight: 700;
+    }
+    .score-circle .score-num { font-size: 26px; line-height: 1; }
+    .score-circle .score-denom { font-size: 11px; opacity: 0.7; }
+    .score-high { background: #dcfce7; color: #15803d; }
+    .score-mid  { background: #fef9c3; color: #a16207; }
+    .score-low  { background: #fee2e2; color: #dc2626; }
+    .score-info { flex: 1; }
+    .score-sentiment { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .score-bar-wrap { height: 6px; background: #e8e8e4; border-radius: 3px; margin-top: 8px; }
+    .score-bar { height: 6px; border-radius: 3px; transition: width 0.6s ease; }
+    .score-bar-high { background: #22c55e; }
+    .score-bar-mid  { background: #eab308; }
+    .score-bar-low  { background: #ef4444; }
 
-  .sentiment-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; }
-  .sentiment-positif { background: #e8f5e9; color: #2e7d32; }
-  .sentiment-neutre { background: #fff8e1; color: #f57f17; }
-  .sentiment-négatif { background: #fdecea; color: #c62828; }
+    /* Cards grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    @media (max-width: 480px) { .cards-grid { grid-template-columns: 1fr; } }
 
-  .tag-list { display: flex; flex-wrap: wrap; gap: 8px; }
-  .tag { font-size: 12px; padding: 5px 10px; border-radius: 6px; line-height: 1.4; }
-  .tag-good { background: #e8f5e9; color: #2e7d32; }
-  .tag-bad { background: #fdecea; color: #c62828; }
-  .tag-block { background: #fff3e0; color: #bf5500; font-weight: 600; }
+    .result-card {
+      background: #fff;
+      border: 1px solid #e8e8e4;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .result-card.full-width { grid-column: 1 / -1; }
+    .result-card.blocker { border-color: #fca5a5; background: #fff5f5; }
+    .result-card.price   { border-color: #93c5fd; background: #f0f7ff; }
+    .result-card.resume  { border-color: #a7f3d0; background: #f0fdf8; }
 
-  .summary-box { background: #1a1a2e; color: #fff; border-radius: 8px; padding: 14px 16px; font-size: 13px; line-height: 1.6; }
-  .summary-box .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(255,255,255,0.4); margin-bottom: 6px; }
+    .card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 10px;
+    }
+    .result-card.blocker .card-label { color: #dc2626; }
+    .result-card.price .card-label   { color: #2563eb; }
+    .result-card.resume .card-label  { color: #059669; }
 
-  .empty-tag { font-size: 12px; color: #bbb; font-style: italic; }
-</style>
+    .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag {
+      font-size: 13px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+    .tag-plus   { background: #dcfce7; color: #15803d; }
+    .tag-minus  { background: #fee2e2; color: #dc2626; }
+    .tag-block  { background: #fca5a5; color: #991b1b; }
+    .tag-empty  { color: #999; font-size: 13px; font-style: italic; }
+
+    .price-text { font-size: 14px; line-height: 1.5; color: #1e40af; }
+    .resume-text { font-size: 14px; line-height: 1.6; color: #065f46; }
+
+    /* Send button */
+    .send-section { margin-top: 20px; }
+    .send-btn {
+      width: 100%;
+      padding: 14px;
+      background: #059669;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .send-btn:hover { background: #047857; }
+    .send-btn:disabled { background: #6ee7b7; cursor: not-allowed; }
+
+    .sent-confirm {
+      display: none;
+      background: #f0fdf8;
+      border: 1px solid #a7f3d0;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+      font-size: 14px;
+      color: #065f46;
+    }
+    .sent-confirm.visible { display: block; }
+    .sent-confirm strong { display: block; font-size: 16px; margin-bottom: 4px; }
+
+    /* Loading */
+    .loading-row {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 0;
+      color: #666;
+      font-size: 14px;
+    }
+    .loading-row.visible { display: flex; }
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid #e8e8e4;
+      border-top-color: #2563eb;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-msg { color: #dc2626; font-size: 13px; margin-top: 8px; display: none; }
+    .error-msg.visible { display: block; }
+  </style>
 </head>
 <body>
 
-<nav class="nav">
-  <a class="nav-logo" href="index.html">
-    <img src="https://flatway.fr/_next/static/media/appIcon.4beb43c9.webp" alt="Flatway"/>
-    <span>Flatway</span>
-  </a>
-  <div class="nav-right"><a href="#" class="nav-login">Se connecter</a></div>
+<nav>
+  <a class="nav-logo" href="index.html">Flat<span>way</span></a>
 </nav>
 
-<main class="main">
-  <div class="listing-pill">
-    <div class="icon">🏠</div>
-    <div class="info">
-      <div class="name">Appartement 3 pièces — Paris 15e, Charles Michels</div>
-      <div class="meta">63 m² · 3 pièces · Visite aujourd'hui</div>
+<main>
+
+  <!-- Property card -->
+  <div class="property-card">
+    <div class="property-icon">🏠</div>
+    <div class="property-info">
+      <h2>Appartement 3 pièces — Paris 15e, Charles Michels</h2>
+      <div class="property-meta">63 m² · 3 pièces · Visite aujourd'hui</div>
+      <div class="property-price">649 000 €</div>
     </div>
-    <div class="price">649 000 €</div>
   </div>
 
-  <div class="page-head">
-    <h1>Votre retour sur cette visite</h1>
-    <p>Parlez librement — qu'est-ce qui vous a plu, déplu, ou bloqué ? L'IA résume votre retour pour le vendeur et l'agent. Aucun filtre, aucune note publique.</p>
+  <!-- Input -->
+  <h1 class="section-title">Votre retour sur cette visite</h1>
+  <p class="section-sub">Parlez librement — qu'est-ce qui vous a plu, déplu, ou bloqué ? Votre retour est transmis à Flatway qui le résume pour l'agent.</p>
+
+  <div class="input-area">
+    <div class="mic-row">
+      <button class="mic-btn" id="micBtn" title="Parler">🎤</button>
+      <span class="mic-label" id="micLabel">Appuyez pour parler</span>
+    </div>
+    <textarea id="feedbackText" placeholder="Ex : La luminosité était superbe, mais la cuisine est vraiment trop petite pour nous. Le bruit de la rue m'a gêné. Le prix me semble un peu élevé par rapport au quartier..."></textarea>
   </div>
 
-  <div class="card">
-    <div class="mic-area">
-      <button class="mic-btn" id="micBtn" onclick="toggleMic()">🎤</button>
-      <div class="mic-label" id="micLabel">Appuyez pour parler</div>
+  <button class="analyze-btn" id="analyzeBtn" onclick="analyze()">Analyser le retour</button>
+  <div class="error-msg" id="errorMsg"></div>
+
+  <div class="loading-row" id="loadingRow">
+    <div class="spinner"></div>
+    Analyse en cours…
+  </div>
+
+  <!-- Results -->
+  <div class="results" id="results">
+
+    <!-- Score -->
+    <div class="score-banner" id="scoreBanner">
+      <div class="score-circle" id="scoreCircle">
+        <span class="score-num" id="scoreNum">—</span>
+        <span class="score-denom">/10</span>
+      </div>
+      <div class="score-info">
+        <div class="score-sentiment" id="scoreSentiment">—</div>
+        <div class="score-bar-wrap">
+          <div class="score-bar" id="scoreBar" style="width:0%"></div>
+        </div>
+      </div>
     </div>
 
-    <div class="divider">ou tapez directement</div>
+    <!-- Likes / Dislikes / Blockers -->
+    <div class="cards-grid">
+      <div class="result-card">
+        <div class="card-label">👍 Ce qui a plu</div>
+        <div class="tag-list" id="tagPlus"></div>
+      </div>
+      <div class="result-card">
+        <div class="card-label">👎 Ce qui n'a pas plu</div>
+        <div class="tag-list" id="tagMinus"></div>
+      </div>
+      <div class="result-card blocker full-width">
+        <div class="card-label">🚫 Points bloquants</div>
+        <div class="tag-list" id="tagBlock"></div>
+      </div>
+      <div class="result-card price full-width">
+        <div class="card-label">💶 Avis sur le prix</div>
+        <div class="price-text" id="prixText">—</div>
+      </div>
+      <div class="result-card resume full-width">
+        <div class="card-label">📋 Résumé pour Flatway</div>
+        <div class="resume-text" id="resumeText">—</div>
+      </div>
+    </div>
 
-    <textarea id="transcript" placeholder="Ex : La luminosité était superbe, mais la cuisine est vraiment trop petite pour nous. Le bruit de la rue m'a gêné. Le prix me semble un peu élevé par rapport au quartier..."></textarea>
+    <!-- Send to Flatway -->
+    <div class="send-section">
+      <button class="send-btn" id="sendBtn" onclick="sendToFlatway()">
+        ✉️ Envoyer ce résumé à Flatway
+      </button>
+      <div class="sent-confirm" id="sentConfirm">
+        <strong>✅ Résumé envoyé à Flatway</strong>
+        Votre conseiller Flatway le transmettra à l'agent sous peu.
+      </div>
+    </div>
 
-    <button class="btn-primary" id="analyseBtn" onclick="analyseFeedback()">Analyser le retour</button>
   </div>
-
-  <div id="resultArea"></div>
 </main>
 
 <script>
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-let recognition = null;
-let isListening = false;
+  // ── Voice input ──────────────────────────────────────────────────────────────
+  let recognition = null;
+  let listening = false;
 
-if (SpeechRecognition) {
-  recognition = new SpeechRecognition();
-  recognition.lang = 'fr-FR';
-  recognition.continuous = true;
-  recognition.interimResults = true;
+  const micBtn   = document.getElementById('micBtn');
+  const micLabel = document.getElementById('micLabel');
+  const textarea = document.getElementById('feedbackText');
 
-  recognition.onresult = (event) => {
-    let final = '';
-    let interim = '';
-    for (let i = 0; i < event.results.length; i++) {
-      const text = event.results[i][0].transcript;
-      if (event.results[i].isFinal) final += text + ' ';
-      else interim += text;
+  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.lang = 'fr-FR';
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    recognition.onresult = (e) => {
+      let transcript = '';
+      for (let i = 0; i < e.results.length; i++) {
+        transcript += e.results[i][0].transcript;
+      }
+      textarea.value = transcript;
+    };
+
+    recognition.onend = () => {
+      listening = false;
+      micBtn.classList.remove('listening');
+      micLabel.textContent = 'Appuyez pour parler';
+    };
+  }
+
+  micBtn.addEventListener('click', () => {
+    if (!recognition) { micLabel.textContent = 'Micro non disponible sur ce navigateur'; return; }
+    if (listening) {
+      recognition.stop();
+    } else {
+      recognition.start();
+      listening = true;
+      micBtn.classList.add('listening');
+      micLabel.textContent = 'Écoute en cours… appuyez à nouveau pour terminer';
     }
-    document.getElementById('transcript').value = (final + interim).trim();
-  };
+  });
 
-  recognition.onend = () => {
-    isListening = false;
-    document.getElementById('micBtn').classList.remove('listening');
-    document.getElementById('micLabel').textContent = 'Appuyez pour parler';
-    document.getElementById('micLabel').classList.remove('active');
-  };
+  // ── Analyze ──────────────────────────────────────────────────────────────────
+  let lastResult = null;
+
+  async function analyze() {
+    const text = textarea.value.trim();
+    if (!text) { showError('Veuillez saisir ou dicter votre retour avant d\'analyser.'); return; }
+
+    clearError();
+    setLoading(true);
+    document.getElementById('results').classList.remove('visible');
+    document.getElementById('sentConfirm').classList.remove('visible');
+    document.getElementById('sendBtn').style.display = 'flex';
+
+    const systemPrompt = `Tu es un assistant Flatway qui analyse le retour d'un visiteur sur un bien immobilier.
+Réponds UNIQUEMENT en JSON valide, sans texte avant ou après.
+
+Format requis :
+{
+  "score": <entier de 1 à 10 représentant la probabilité d'offre>,
+  "sentiment": <"Très intéressé" | "Intéressé mais hésitant" | "Peu convaincu" | "Pas intéressé">,
+  "positifs": [<liste de points positifs courts>],
+  "negatifs": [<liste de points négatifs courts>],
+  "bloquants": [<points qui pourraient faire rater la vente — vide [] si aucun>],
+  "avis_prix": <phrase courte sur le ressenti prix, ou "Pas mentionné" si absent>,
+  "resume": <2-3 phrases de résumé professionnel pour l'agent Flatway>
 }
 
-function toggleMic() {
-  if (!recognition) { alert('Votre navigateur ne supporte pas la reconnaissance vocale. Tapez votre retour directement.'); return; }
-  if (isListening) {
-    recognition.stop();
-  } else {
-    document.getElementById('transcript').value = '';
-    recognition.start();
-    isListening = true;
-    document.getElementById('micBtn').classList.add('listening');
-    document.getElementById('micLabel').textContent = 'Écoute en cours... appuyez à nouveau pour terminer';
-    document.getElementById('micLabel').classList.add('active');
+Règles :
+- score élevé (8-10) = très intéressé, probable offre ; moyen (5-7) = hésitant ; bas (1-4) = peu/pas intéressé
+- bloquants = problèmes qui empêcheraient vraiment l'achat (bruit insupportable, budget dépassé, taille rédhibitoire…) — distinct des simples dislikes
+- resume doit être professionnel, factuel, utile pour l'agent`;
+
+    // Embed format instructions in the feedback text itself so the backend
+    // follows them regardless of whatever system prompt it has hardcoded.
+    const feedbackWithInstructions = `Retour de visite immobilière à analyser :
+
+${text}
+
+---
+Analyse ce retour et réponds UNIQUEMENT en JSON valide (aucun texte avant ou après) avec exactement ce format :
+{
+  "score": <entier de 1 à 10 représentant la probabilité d'offre>,
+  "sentiment": <"Très intéressé" | "Intéressé mais hésitant" | "Peu convaincu" | "Pas intéressé">,
+  "positifs": [<liste de points positifs courts, en français>],
+  "negatifs": [<liste de points négatifs courts, en français>],
+  "bloquants": [<points qui pourraient vraiment faire rater la vente — [] si aucun>],
+  "avis_prix": "<phrase courte sur le ressenti prix, ou \\"Pas mentionné\\" si absent>",
+  "resume": "<2-3 phrases de résumé professionnel pour l'agent immobilier>"
+}
+
+Règles impératives :
+- score 8-10 = très intéressé, offre probable ; 5-7 = hésitant ; 1-4 = peu/pas intéressé
+- bloquants uniquement pour les vrais deal-breakers (budget dépassé, bruit rédhibitoire, taille insuffisante…)
+- JSON pur uniquement, aucun markdown`;
+
+    try {
+      const res = await fetch('/api/visit-feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ feedback: feedbackWithInstructions, systemPrompt })
+      });
+      const data = await res.json();
+      const raw = (data.result || data.content || '').trim()
+        .replace(/```json/g, '').replace(/```/g, '').trim();
+      const start = raw.indexOf('{'), end = raw.lastIndexOf('}') + 1;
+      lastResult = JSON.parse(raw.slice(start, end));
+      renderResults(lastResult);
+    } catch(e) {
+      showError('Erreur lors de l\'analyse. Réessayez dans un instant.');
+    } finally {
+      setLoading(false);
+    }
   }
-}
 
-async function analyseFeedback() {
-  const transcript = document.getElementById('transcript').value.trim();
-  if (!transcript) { alert('Veuillez d\'abord parler ou taper votre retour.'); return; }
+  function renderResults(r) {
+    // Score
+    const score = Math.max(1, Math.min(10, r.score || 5));
+    document.getElementById('scoreNum').textContent = score;
+    document.getElementById('scoreSentiment').textContent = r.sentiment || '—';
 
-  const btn = document.getElementById('analyseBtn');
-  btn.disabled = true;
-  btn.textContent = 'Analyse en cours...';
-  document.getElementById('resultArea').innerHTML = '<div class="loading">L\'IA analyse votre retour...</div>';
+    const circle = document.getElementById('scoreCircle');
+    const bar    = document.getElementById('scoreBar');
+    circle.className = 'score-circle';
+    bar.className    = 'score-bar';
+    if (score >= 7)      { circle.classList.add('score-high'); bar.classList.add('score-bar-high'); }
+    else if (score >= 4) { circle.classList.add('score-mid');  bar.classList.add('score-bar-mid'); }
+    else                 { circle.classList.add('score-low');  bar.classList.add('score-bar-low'); }
+    bar.style.width = (score * 10) + '%';
 
-  try {
-    const res = await fetch('/api/visit-feedback', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ transcript })
-    });
-    if (!res.ok) throw new Error('Erreur serveur (' + res.status + ')');
-    const data = await res.json();
-    renderResult(data);
-  } catch (e) {
-    document.getElementById('resultArea').innerHTML = '<div class="error">Erreur : ' + e.message + '</div>';
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Analyser le retour';
+    // Tags
+    renderTags('tagPlus',   r.positifs  || [], 'tag-plus');
+    renderTags('tagMinus',  r.negatifs  || [], 'tag-minus');
+    renderTags('tagBlock',  r.bloquants || [], 'tag-block');
+
+    document.getElementById('prixText').textContent   = r.avis_prix || 'Pas mentionné';
+    document.getElementById('resumeText').textContent = r.resume    || '—';
+
+    document.getElementById('results').classList.add('visible');
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
-}
 
-function renderResult(d) {
-  const sentimentClass = 'sentiment-' + (d.sentiment || 'neutre');
-  const tags = (arr, cls) => arr && arr.length
-    ? arr.map(t => `<span class="tag ${cls}">${t}</span>`).join('')
-    : '<span class="empty-tag">Rien de mentionné</span>';
+  function renderTags(elId, items, cls) {
+    const el = document.getElementById(elId);
+    el.innerHTML = '';
+    if (!items.length) {
+      el.innerHTML = '<span class="tag-empty">Rien de mentionné</span>';
+    } else {
+      items.forEach(item => {
+        const span = document.createElement('span');
+        span.className = 'tag ' + cls;
+        span.textContent = item;
+        el.appendChild(span);
+      });
+    }
+  }
 
-  document.getElementById('resultArea').innerHTML = `
-    <div class="card">
-      <div class="result-section">
-        <div class="result-label">Sentiment général</div>
-        <span class="sentiment-badge ${sentimentClass}">${d.sentiment || 'neutre'}</span>
-      </div>
+  // ── Send to Flatway ──────────────────────────────────────────────────────────
+  function sendToFlatway() {
+    const btn = document.getElementById('sendBtn');
+    btn.disabled = true;
+    btn.textContent = 'Envoi…';
 
-      <div class="result-section">
-        <div class="result-label">Ce qui a plu</div>
-        <div class="tag-list">${tags(d.liked, 'tag-good')}</div>
-      </div>
+    // Simulate send (in production: POST to /api/send-feedback)
+    setTimeout(() => {
+      btn.style.display = 'none';
+      document.getElementById('sentConfirm').classList.add('visible');
+    }, 1200);
+  }
 
-      <div class="result-section">
-        <div class="result-label">Ce qui n'a pas plu</div>
-        <div class="tag-list">${tags(d.didntLike, 'tag-bad')}</div>
-      </div>
+  // ── Helpers ──────────────────────────────────────────────────────────────────
+  function setLoading(on) {
+    document.getElementById('loadingRow').classList.toggle('visible', on);
+    document.getElementById('analyzeBtn').disabled = on;
+  }
 
-      <div class="result-section">
-        <div class="result-label">Points bloquants</div>
-        <div class="tag-list">${tags(d.dealbreakers, 'tag-block')}</div>
-      </div>
+  function showError(msg) {
+    const el = document.getElementById('errorMsg');
+    el.textContent = msg;
+    el.classList.add('visible');
+  }
 
-      ${d.priceFeedback ? `
-      <div class="result-section">
-        <div class="result-label">Avis sur le prix</div>
-        <div style="font-size:13px;color:#444;line-height:1.5;">${d.priceFeedback}</div>
-      </div>` : ''}
-
-      <div class="summary-box">
-        <div class="label">Résumé pour le vendeur / agent</div>
-        ${d.agentSummary || 'Aucun résumé généré.'}
-      </div>
-    </div>
-  `;
-}
+  function clearError() {
+    document.getElementById('errorMsg').classList.remove('visible');
+  }
 </script>
+
 </body>
 </html>

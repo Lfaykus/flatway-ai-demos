@@ -693,22 +693,25 @@ app.post('/api/social-content', async (req, res) => {
 const VISIT_FEEDBACK_SYSTEM_PROMPT = `Tu analyses le retour verbal d'un acheteur après une visite de bien immobilier pour Flatway.fr.
 Réponds UNIQUEMENT en JSON valide :
 {
+  "score": number,
   "sentiment": "positif" | "neutre" | "négatif",
-  "liked": ["point positif 1", "point positif 2"],
-  "didntLike": ["point négatif 1", "point négatif 2"],
-  "dealbreakers": ["point bloquant 1"],
-  "priceFeedback": "courte phrase sur l'avis prix, ou null si non mentionné",
-  "agentSummary": "1-2 phrases résumant ce que le vendeur/agent doit retenir de ce retour"
+  "positifs": ["point positif 1", "point positif 2"],
+  "négatifs": ["point négatif 1", "point négatif 2"],
+  "bloquants": ["point bloquant 1"],
+  "avis_prix": "courte phrase sur l'avis prix, ou null si non mentionné",
+  "resume": "1-2 phrases résumant ce que le vendeur/agent doit retenir de ce retour"
 }
+"score" : note globale de la visite de 0 (très négatif) à 10 (très positif), basée sur l'ensemble du retour.
 Règle stricte : base-toi UNIQUEMENT sur ce que l'acheteur a dit. N'invente rien. Si un champ n'est pas mentionné, retourne un tableau vide ou null.`;
 
 app.post('/api/visit-feedback', async (req, res) => {
-  const { transcript } = req.body || {};
-  if (!transcript || !transcript.trim()) {
-    return res.status(400).json({ error: 'No transcript provided.' });
+  const { feedback, transcript } = req.body || {};
+  const text = feedback || transcript;
+  if (!text || !text.trim()) {
+    return res.status(400).json({ error: 'No feedback provided.' });
   }
   try {
-    const result = await callAnthropic(VISIT_FEEDBACK_SYSTEM_PROMPT, transcript, 400);
+    const result = await callAnthropic(VISIT_FEEDBACK_SYSTEM_PROMPT, text, 600);
     return res.json(result);
   } catch (e) {
     console.error('Unexpected error calling Anthropic (visit-feedback):', e);
