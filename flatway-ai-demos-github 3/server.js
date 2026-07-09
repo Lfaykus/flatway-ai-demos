@@ -696,7 +696,7 @@ Réponds UNIQUEMENT en JSON valide :
   "score": number,
   "sentiment": "positif" | "neutre" | "négatif",
   "positifs": ["point positif 1", "point positif 2"],
-  "négatifs": ["point négatif 1", "point négatif 2"],
+  "negatifs": ["point négatif 1", "point négatif 2"],
   "bloquants": ["point bloquant 1"],
   "avis_prix": "courte phrase sur l'avis prix, ou null si non mentionné",
   "resume": "1-2 phrases résumant ce que le vendeur/agent doit retenir de ce retour"
